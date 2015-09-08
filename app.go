@@ -26,4 +26,19 @@ func (app *App) Run(addr string) error {
 
 func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	glog.Infof("%+v", r)
+	c := NewContext()
+	c.Request = r
+	c.ResponseWriter = newResponseWriter(w)
+	app.handleHTTPRequest(c)
+}
+
+func (app *App) handleHTTPRequest(c *Context) {
+	handler, pathParams := app.router.MatchRoute(c.Request.RequestURI, c.Request.Method)
+	c.PathParams = pathParams
+	handler(c)
+
+	w := c.ResponseWriter.(*ResponseWriter)
+	if !w.Written() {
+		w.WriteHeader(500)
+	}
 }
