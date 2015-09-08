@@ -1,6 +1,7 @@
 package ringo
 
 import (
+	"net/url"
 	"regexp"
 
 	"github.com/golang/glog"
@@ -69,18 +70,18 @@ func (r *Router) AddRoute(path string, method string, handler HandleFunc) {
 	// }
 }
 
-func (r *Router) MatchRoute(path string, method string) (HandleFunc, map[string]string) {
+func (r *Router) MatchRoute(path string, method string) (HandleFunc, *url.Values) {
 	for _, route := range r.routes {
 		if route.Method == method {
 			subMatch := route.PathRegexp.FindAllStringSubmatch(path, -1)
 			if subMatch != nil {
 				subMatchNames := route.PathRegexp.SubexpNames()[1:]
-				pathParams := make(map[string]string)
+				pathParams := url.Values{}
 				for i, matchName := range subMatchNames {
-					pathParams[matchName] = subMatch[i][1]
+					pathParams.Set(matchName, subMatch[i][1])
 				}
 
-				return route.Handler, pathParams
+				return route.Handler, &pathParams
 			}
 		}
 	}
