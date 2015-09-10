@@ -1,10 +1,9 @@
 package ringo
 
 import (
+	"log"
 	"net/url"
 	"regexp"
-
-	"github.com/golang/glog"
 )
 
 func (r *Router) GET(path string, handler HandleFunc) {
@@ -45,14 +44,14 @@ type Router struct {
 var pathParamRegexp *regexp.Regexp
 
 func init() {
-	pathParamRegexp = regexp.MustCompile("(\\:w+)(?:/|$)")
+	pathParamRegexp = regexp.MustCompile("\\:(\\w+)([/$])")
 }
 
 func compilePathExp(path string) (*regexp.Regexp, error) {
 	escaped := regexp.QuoteMeta(path)
-	glog.Info("escaped route path: ", escaped)
-	replaced := pathParamRegexp.ReplaceAllString(escaped, "(?P<$1>w+)")
-	glog.Info("replaced route path: ", replaced)
+	log.Printf("escaped route path: %s", escaped)
+	replaced := pathParamRegexp.ReplaceAllString(escaped, "(?P<$1>\\w+)$2")
+	log.Printf("replaced route path: %s", replaced)
 	return regexp.Compile(replaced)
 }
 
@@ -60,11 +59,11 @@ func (r *Router) AddRoute(path string, method string, handler HandleFunc) {
 	// key := fmt.Sprint("%s/%s", method, path)
 	pathRegexp, err := compilePathExp(path)
 	if err != nil {
-		glog.Fatalf("Path compile error, please check syntax:\n[%s]%s\n%s", method, path, err)
+		log.Fatalf("Path compile error, please check syntax:\n[%s]%s\n%s", method, path, err)
 	}
 	r.routes = append(r.routes, routeHandler{Path: path, Method: method, Handler: handler, PathRegexp: pathRegexp})
 	// if _, ok = r.routes[key]; ok {
-	// 	// glog.Fatalf("[%s]%s already exists, duplicate route!", method, path)
+	// 	// log.Fatalf.Fatalf("[%s]%s already exists, duplicate route!", method, path)
 	// } else {
 	// 	r.routes[key] = handler
 	// }
@@ -72,6 +71,7 @@ func (r *Router) AddRoute(path string, method string, handler HandleFunc) {
 
 func (r *Router) MatchRoute(path string, method string) (HandleFunc, *url.Values) {
 	for _, route := range r.routes {
+		log.Printf("try match [%s]%s by route %+v", method, path, route)
 		if route.Method == method {
 			subMatch := route.PathRegexp.FindAllStringSubmatch(path, -1)
 			if subMatch != nil {

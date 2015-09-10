@@ -1,31 +1,31 @@
 package ringo
 
 import (
+	"log"
 	"net/http"
-
-	"github.com/golang/glog"
 )
 
 type App struct {
-	router Router
+	router *Router
 }
 
-func (app *App) GetRouter() Router { return app.router }
+func (app *App) GetRouter() *Router { return app.router }
 
 func NewApp() *App {
-	return &App{router: *NewRouter()}
+	return &App{router: NewRouter()}
 }
 
 func (app *App) Run(addr string) error {
+	log.Printf("Listening on %s, start serve HTTP", addr)
 	err := http.ListenAndServe(addr, app)
 	if err != nil {
-		glog.Errorf("%s", err)
+		log.Printf("%s", err)
 	}
 	return err
 }
 
 func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	glog.Infof("%+v", r)
+	log.Printf("%+v", r)
 	c := NewContext()
 	c.Request = r
 	c.ResponseWriter = newResponseWriter(w)
@@ -35,7 +35,12 @@ func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (app *App) handleHTTPRequest(c *Context) {
 	handler, pathParams := app.router.MatchRoute(c.Request.RequestURI, c.Request.Method)
 	c.PathParams = pathParams
-	handler(c)
+	if handler != nil {
+		handler(c)
+	} else {
+		// handler 404 not found
+		log.Printf("Not found route for %s", c.RequestURI)
+	}
 
 	w := c.ResponseWriter.(*ResponseWriter)
 	if !w.Written() {
