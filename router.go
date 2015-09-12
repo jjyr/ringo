@@ -29,13 +29,19 @@ func (r *Router) PATCH(path string, handler HandlerFunc) {
 	r.AddRoute(path, "PATCH", handler)
 }
 
+func (router *Router) Mount(path string, mountedRouter *Router) {
+	for _, r := range mountedRouter.routes {
+		router.AddRoute(path+r.path, r.method, r.handler)
+	}
+}
+
 // Mount(path string, r Router)
 
 type routeHandler struct {
-	Method     string
-	PathRegexp *regexp.Regexp
-	Path       string
-	Handler    HandlerFunc
+	method     string
+	pathRegexp *regexp.Regexp
+	path       string
+	handler    HandlerFunc
 }
 
 type Router struct {
@@ -62,7 +68,7 @@ func (r *Router) AddRoute(path string, method string, handler HandlerFunc) {
 	if err != nil {
 		log.Fatalf("Path compile error, please check syntax:\n[%s]%s\n%s", method, path, err)
 	}
-	r.routes = append(r.routes, routeHandler{Path: path, Method: method, Handler: handler, PathRegexp: pathRegexp})
+	r.routes = append(r.routes, routeHandler{path: path, method: method, handler: handler, pathRegexp: pathRegexp})
 	// if _, ok = r.routes[key]; ok {
 	// 	// log.Fatalf.Fatalf("[%s]%s already exists, duplicate route!", method, path)
 	// } else {
@@ -73,16 +79,16 @@ func (r *Router) AddRoute(path string, method string, handler HandlerFunc) {
 func (r *Router) MatchRoute(path string, method string) (HandlerFunc, *url.Values) {
 	for _, route := range r.routes {
 		log.Printf("try match [%s]%s by route %+v", method, path, route)
-		if route.Method == method {
-			subMatch := route.PathRegexp.FindAllStringSubmatch(path, -1)
+		if route.method == method {
+			subMatch := route.pathRegexp.FindAllStringSubmatch(path, -1)
 			if subMatch != nil {
-				subMatchNames := route.PathRegexp.SubexpNames()[1:]
+				subMatchNames := route.pathRegexp.SubexpNames()[1:]
 				pathParams := url.Values{}
 				for i, matchName := range subMatchNames {
 					pathParams.Set(matchName, subMatch[i][1])
 				}
 
-				return route.Handler, &pathParams
+				return route.handler, &pathParams
 			}
 		}
 	}
