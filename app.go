@@ -6,13 +6,16 @@ import (
 )
 
 type App struct {
-	router *Router
+	*Router
+	middlewares []MiddlewareFunc
 }
 
-func (app *App) GetRouter() *Router { return app.router }
-
 func NewApp() *App {
-	return &App{router: NewRouter()}
+	return &App{Router: NewRouter()}
+}
+
+func (app *App) Use(middlewreFunc MiddlewareFunc) {
+	app.middlewares = append(app.middlewares, middlewreFunc)
 }
 
 func (app *App) Run(addr string) error {
@@ -29,22 +32,27 @@ func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c := NewContext()
 	c.Request = r
 	c.ResponseWriter = newResponseWriter(w)
-	app.handleHTTPRequest(c)
+	app.applyMiddlewares(app.handleHTTPRequest)(c)
+}
+
+func (app *App) applyMiddlewares(handler HandlerFunc) HandlerFunc {
+	for _, middleware := range app.middlewares {
+		handler = middleware(handler)
+	}
+
+	return handler
 }
 
 func (app *App) handleHTTPRequest(c *Context) {
-	handler, params := app.router.MatchRoute(c.Request.URL.Path, c.Request.Method)
+	handler, params := app.Router.MatchRoute(c.Request.URL.Path, c.Request.Method)
 	c.Params = params
 
-	if handler != nil {
-		handler(c)
-	} else {
-		handleNotFound(c)
+	if handler == nil {
+		handler = handleNotFound
 		log.Printf("Not found route for %s", c.RequestURI)
 	}
 
-	w := c.ResponseWriter.(*ResponseWriter)
-	if !w.Written() {
+	if !c.Rendered() {
 		panic("Empty response, missing render call in handler")
 	}
 }

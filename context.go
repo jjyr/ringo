@@ -31,3 +31,7 @@ func (c *Context) Render(statusCode int, content interface{}) {
 	w.WriteHeader(statusCode)
 	w.Write(byteContent)
 }
+
+func (c *Context) Rendered() bool {
+	return c.ResponseWriter.(*ResponseWriter).Written()
+}
