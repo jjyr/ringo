@@ -33,17 +33,24 @@ func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *App) handleHTTPRequest(c *Context) {
-	handler, pathParams := app.router.MatchRoute(c.Request.RequestURI, c.Request.Method)
-	c.PathParams = pathParams
+	handler, params := app.router.MatchRoute(c.Request.URL.Path, c.Request.Method)
+	c.Params = params
+
 	if handler != nil {
 		handler(c)
 	} else {
-		// handler 404 not found
+		handleNotFound(c)
 		log.Printf("Not found route for %s", c.RequestURI)
 	}
 
 	w := c.ResponseWriter.(*ResponseWriter)
 	if !w.Written() {
-		w.WriteHeader(500)
+		panic("Empty response, missing render call in handler")
 	}
+}
+
+func handleNotFound(c *Context) {
+	statusCode := http.StatusNotFound
+	text := http.StatusText(statusCode)
+	c.Render(statusCode, text)
 }

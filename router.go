@@ -1,30 +1,31 @@
 package ringo
 
 import (
+	"fmt"
 	"log"
 	"net/url"
 	"regexp"
 )
 
-func (r *Router) GET(path string, handler HandleFunc) {
+func (r *Router) GET(path string, handler HandlerFunc) {
 	r.AddRoute(path, "GET", handler)
 }
-func (r *Router) POST(path string, handler HandleFunc) {
+func (r *Router) POST(path string, handler HandlerFunc) {
 	r.AddRoute(path, "POST", handler)
 }
-func (r *Router) PUT(path string, handler HandleFunc) {
+func (r *Router) PUT(path string, handler HandlerFunc) {
 	r.AddRoute(path, "PUT", handler)
 }
-func (r *Router) DELETE(path string, handler HandleFunc) {
+func (r *Router) DELETE(path string, handler HandlerFunc) {
 	r.AddRoute(path, "DELETE", handler)
 }
-func (r *Router) HEAD(path string, handler HandleFunc) {
+func (r *Router) HEAD(path string, handler HandlerFunc) {
 	r.AddRoute(path, "HEAD", handler)
 }
-func (r *Router) OPTION(path string, handler HandleFunc) {
+func (r *Router) OPTION(path string, handler HandlerFunc) {
 	r.AddRoute(path, "OPTION", handler)
 }
-func (r *Router) PATCH(path string, handler HandleFunc) {
+func (r *Router) PATCH(path string, handler HandlerFunc) {
 	r.AddRoute(path, "PATCH", handler)
 }
 
@@ -34,7 +35,7 @@ type routeHandler struct {
 	Method     string
 	PathRegexp *regexp.Regexp
 	Path       string
-	Handler    HandleFunc
+	Handler    HandlerFunc
 }
 
 type Router struct {
@@ -52,10 +53,10 @@ func compilePathExp(path string) (*regexp.Regexp, error) {
 	log.Printf("escaped route path: %s", escaped)
 	replaced := pathParamRegexp.ReplaceAllString(escaped, "(?P<$1>\\w+)$2")
 	log.Printf("replaced route path: %s", replaced)
-	return regexp.Compile(replaced)
+	return regexp.Compile(fmt.Sprintf("^%s$", replaced))
 }
 
-func (r *Router) AddRoute(path string, method string, handler HandleFunc) {
+func (r *Router) AddRoute(path string, method string, handler HandlerFunc) {
 	// key := fmt.Sprint("%s/%s", method, path)
 	pathRegexp, err := compilePathExp(path)
 	if err != nil {
@@ -69,7 +70,7 @@ func (r *Router) AddRoute(path string, method string, handler HandleFunc) {
 	// }
 }
 
-func (r *Router) MatchRoute(path string, method string) (HandleFunc, *url.Values) {
+func (r *Router) MatchRoute(path string, method string) (HandlerFunc, *url.Values) {
 	for _, route := range r.routes {
 		log.Printf("try match [%s]%s by route %+v", method, path, route)
 		if route.Method == method {

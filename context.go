@@ -9,7 +9,7 @@ import (
 type Context struct {
 	*http.Request
 	http.ResponseWriter
-	PathParams *url.Values
+	Params *url.Values
 }
 
 func NewContext() *Context {

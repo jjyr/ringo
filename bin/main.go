@@ -17,7 +17,8 @@ func main() {
 	})
 
 	r.GET("/numbers/:n/echo", func(c *ringo.Context) {
-		log.Print(c.PathParams.Get("n"))
+		log.Print(c.URL.Query())
+		log.Print(c.Params.Get("n"))
 	})
 
 	app.Run("localhost:8020")

@@ -1,3 +1,3 @@
 package ringo
 
-type HandleFunc func(c *Context)
+type HandlerFunc func(c *Context)
