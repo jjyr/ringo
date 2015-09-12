@@ -1,13 +1,15 @@
 package ringo
 
 import (
+	"errors"
 	"log"
 	"net/http"
 )
 
 type App struct {
 	*Router
-	middlewares []MiddlewareFunc
+	middlewares       []MiddlewareFunc
+	handleHTTPRequest HandlerFunc
 }
 
 func NewApp() *App {
@@ -20,6 +22,7 @@ func (app *App) Use(middlewreFunc MiddlewareFunc) {
 
 func (app *App) Run(addr string) error {
 	log.Printf("Listening on %s, start serve HTTP", addr)
+	app.initForServe()
 	err := http.ListenAndServe(addr, app)
 	if err != nil {
 		log.Printf("%s", err)
@@ -32,7 +35,12 @@ func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c := NewContext()
 	c.Request = r
 	c.ResponseWriter = newResponseWriter(w)
-	app.applyMiddlewares(app.handleHTTPRequest)(c)
+	app.handleHTTPRequest(c)
+}
+
+func (app *App) initForServe() {
+	// use middlewares
+	app.handleHTTPRequest = app.applyMiddlewares(app.defaultHandleHTTPRequest)
 }
 
 func (app *App) applyMiddlewares(handler HandlerFunc) HandlerFunc {
@@ -43,7 +51,7 @@ func (app *App) applyMiddlewares(handler HandlerFunc) HandlerFunc {
 	return handler
 }
 
-func (app *App) handleHTTPRequest(c *Context) {
+func (app *App) defaultHandleHTTPRequest(c *Context) {
 	handler, params := app.Router.MatchRoute(c.Request.URL.Path, c.Request.Method)
 	c.Params = params
 
@@ -53,7 +61,7 @@ func (app *App) handleHTTPRequest(c *Context) {
 	}
 
 	if !c.Rendered() {
-		panic("Empty response, missing render call in handler")
+		panic(errors.New("Empty response, missing render call in handler"))
 	}
 }
 
