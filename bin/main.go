@@ -11,7 +11,13 @@ import (
 func main() {
 	flag.Parse()
 	app := ringo.NewApp()
-	// r := app.GetRouter()
+	r := ringo.NewRouter()
+	r.GET("/hello", func(c *ringo.Context) {
+		c.Render(200, "hello world!")
+	})
+
+	app.Mount("/say", r)
+
 	app.GET("/ping", func(c *ringo.Context) {
 		log.Print("pong!")
 		c.Render(200, "pong!")
