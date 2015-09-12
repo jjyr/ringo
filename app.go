@@ -60,6 +60,8 @@ func (app *App) defaultHandleHTTPRequest(c *Context) {
 		log.Printf("Not found route for %s", c.RequestURI)
 	}
 
+	handler(c)
+
 	if !c.Rendered() {
 		panic(errors.New("Empty response, missing render call in handler"))
 	}
