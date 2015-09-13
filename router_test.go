@@ -8,6 +8,7 @@ import (
 
 func TestRouter(t *testing.T) {
 	// TODO add same name params test
+	// TODO add same path params test
 	r := NewRouter()
 
 	var handlerName string
@@ -65,7 +66,7 @@ func TestRouter(t *testing.T) {
 		{"PATCH", "/change", nil, nil},
 		{"PATCH", "/change/", nil, nil},
 		{"PATCH", "/change/world", h2, &url.Values{"thing": []string{"world"}}},
-		{"PUT", "/get/secret/info", h2, &url.Values{"secret": []string{"secret"}}},
+		{"PUT", "/get/secret/info", h2, &url.Values{"thing": []string{"secret"}}},
 		{"OPTIONS", "/try/2/params/3", h1, &url.Values{"two": []string{"2"}, "togather": []string{"3"}}},
 		{"HEAD", "/try/2/params/3", nil, nil},
 		{"OPTIONS", "/tests/any", h4, &url.Values{}},
