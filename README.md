@@ -1,4 +1,4 @@
-# Ringo [![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](http://godoc.org/github.com/jjyr/ringo) [![Build Status](https://img.shields.io/travis/joyent/node.svg?style=flat-square)](https://travis-ci.org/jjyr/ringo)
+# Ringo [![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](http://godoc.org/github.com/jjyr/ringo) [![Build Status](https://img.shields.io/travis/jjyr/ringo.svg?style=flat-square)](https://travis-ci.org/jjyr/ringo)
 
 Yet another web framework for Go.
 
