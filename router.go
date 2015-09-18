@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"path"
 	"regexp"
 )
 
@@ -33,9 +34,9 @@ func (r *Router) Any(path string, handler HandlerFunc) {
 	r.AddRoute(path, "*", handler)
 }
 
-func (router *Router) Mount(path string, mountedRouter *Router) {
+func (router *Router) Mount(mountPath string, mountedRouter *Router) {
 	for _, r := range mountedRouter.routes {
-		router.AddRoute(path+r.path, r.method, r.handler)
+		router.AddRoute(path.Join(mountPath, r.path), r.method, r.handler)
 	}
 }
 

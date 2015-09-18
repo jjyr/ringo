@@ -54,6 +54,10 @@ func TestRouter(t *testing.T) {
 	r2.POST("/echo/:word", h4)
 	r.Mount("/mount", r2)
 
+	r3 := NewRouter()
+	r3.GET("/root", h2)
+	r.Mount("/", r3)
+
 	cases := []struct {
 		method, path string
 		handler      HandlerFunc
@@ -77,6 +81,7 @@ func TestRouter(t *testing.T) {
 		{"GET", "/tests/any", h4, &url.Values{}},
 		{"GET", "/mount/hello", h3, &url.Values{}},
 		{"POST", "/mount/echo/nihao", h4, &url.Values{"word": []string{"nihao"}}},
+		{"GET", "/root", h2, &url.Values{}},
 	}
 
 	for i, c := range cases {
