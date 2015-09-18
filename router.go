@@ -90,11 +90,6 @@ func (r *Router) AddRoute(path string, method string, handler HandlerFunc) {
 	} else {
 		r.routes = append(r.routes, route)
 	}
-	// if _, ok = r.routes[key]; ok {
-	// 	// log.Fatalf.Fatalf("[%s]%s already exists, duplicate route!", method, path)
-	// } else {
-	// 	r.routes[key] = handler
-	// }
 }
 
 func (r *Router) MatchRoute(path string, method string) (HandlerFunc, *url.Values) {

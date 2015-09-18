@@ -49,6 +49,11 @@ func TestRouter(t *testing.T) {
 	r.OPTIONS("/try/:two/params/:togather", h1)
 	r.OPTIONS("/same/:name/params/:name", h1)
 
+	r2 := NewRouter()
+	r2.GET("/hello", h3)
+	r2.POST("/echo/:word", h4)
+	r.Mount("/mount", r2)
+
 	cases := []struct {
 		method, path string
 		handler      HandlerFunc
@@ -70,6 +75,8 @@ func TestRouter(t *testing.T) {
 		{"HEAD", "/try/2/params/3", nil, nil},
 		{"OPTIONS", "/tests/any", h4, &url.Values{}},
 		{"GET", "/tests/any", h4, &url.Values{}},
+		{"GET", "/mount/hello", h3, &url.Values{}},
+		{"POST", "/mount/echo/nihao", h4, &url.Values{"word": []string{"nihao"}}},
 	}
 
 	for i, c := range cases {
