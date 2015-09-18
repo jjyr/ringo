@@ -48,9 +48,12 @@ type routeHandler struct {
 	handler    HandlerFunc
 }
 
+type routeRegisterMap map[string]bool
+
 type Router struct {
-	routes    []routeHandler
-	anyRoutes []routeHandler
+	routes        []routeHandler
+	anyRoutes     []routeHandler
+	routesPathMap routeRegisterMap
 }
 
 var pathParamRegexp *regexp.Regexp
@@ -68,9 +71,16 @@ func compilePathExp(path string) (*regexp.Regexp, error) {
 }
 
 func (r *Router) AddRoute(path string, method string, handler HandlerFunc) {
+	key := fmt.Sprintf("%s %s", method, path)
+	if _, exist := r.routesPathMap[key]; exist {
+		log.Panicf("router [%s]%s already exists", method, path)
+	} else {
+		r.routesPathMap[key] = true
+	}
+
 	pathRegexp, err := compilePathExp(path)
 	if err != nil {
-		log.Fatalf("Path compile error, please check syntax:\n[%s]%s\n%s", method, path, err)
+		log.Panicf("Path compile error, please check syntax:\n[%s]%s\n%s", method, path, err)
 	}
 
 	route := routeHandler{path: path, method: method, handler: handler, pathRegexp: pathRegexp}
@@ -118,5 +128,6 @@ func matchRouteHandler(path string, method string, routes []routeHandler) (Handl
 // NewRouter new router
 func NewRouter() *Router {
 	r := Router{}
+	r.routesPathMap = make(routeRegisterMap)
 	return &r
 }

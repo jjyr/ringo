@@ -7,8 +7,6 @@ import (
 )
 
 func TestRouter(t *testing.T) {
-	// TODO add same name params test
-	// TODO add same path params test
 	r := NewRouter()
 
 	var handlerName string
@@ -45,11 +43,11 @@ func TestRouter(t *testing.T) {
 	r.HEAD("/tests", h3)
 	r.Any("/tests", h4)
 	r.Any("/tests/any", h4)
-
 	r.DELETE("/tests", h2)
 	r.PATCH("/change/:thing", h2)
 	r.PUT("/get/:thing/info", h2)
 	r.OPTIONS("/try/:two/params/:togather", h1)
+	r.OPTIONS("/same/:name/params/:name", h1)
 
 	cases := []struct {
 		method, path string
@@ -68,6 +66,7 @@ func TestRouter(t *testing.T) {
 		{"PATCH", "/change/world", h2, &url.Values{"thing": []string{"world"}}},
 		{"PUT", "/get/secret/info", h2, &url.Values{"thing": []string{"secret"}}},
 		{"OPTIONS", "/try/2/params/3", h1, &url.Values{"two": []string{"2"}, "togather": []string{"3"}}},
+		{"OPTIONS", "/same/test/params/test2", h1, &url.Values{"name": []string{"test2"}}},
 		{"HEAD", "/try/2/params/3", nil, nil},
 		{"OPTIONS", "/tests/any", h4, &url.Values{}},
 		{"GET", "/tests/any", h4, &url.Values{}},
@@ -79,4 +78,10 @@ func TestRouter(t *testing.T) {
 			t.Errorf("Test case %d failed, expect handler: %v, params: %v; get handler %v, params: %v", i+1, c.handler, c.params, h, v)
 		}
 	}
+
+	func() {
+		defer func() { recover() }()
+		r.GET("/tests", h1)
+		t.Errorf("Same method & path router should trigger panic, bug not")
+	}()
 }
