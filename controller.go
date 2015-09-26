@@ -7,14 +7,14 @@ import (
 )
 
 type Controllerable interface {
-	GetName() string
+	ControllerName() string
 }
 
 type Controller struct {
 	Name string
 }
 
-func (c *Controller) GetName() string {
+func (c *Controller) ControllerName() string {
 	return c.Name
 }
 
@@ -37,7 +37,7 @@ func init() {
 }
 
 func registerToRouter(r *Router, c Controllerable) {
-	controllerName := c.GetName()
+	controllerName := c.ControllerName()
 	if controllerName == "" {
 		panic(fmt.Errorf("Controller Name is empty, %+v", c))
 	}
