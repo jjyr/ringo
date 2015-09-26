@@ -40,7 +40,9 @@ func (router *Router) Mount(mountPath string, mountedRouter *Router) {
 	}
 }
 
-// Mount(path string, r Router)
+func (r *Router) AddController(controller Controllerable) {
+	registerToRouter(r, controller)
+}
 
 type routeHandler struct {
 	method     string
