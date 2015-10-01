@@ -1,10 +1,6 @@
 package ringo
 
-import (
-	"net/url"
-	"reflect"
-	"testing"
-)
+import "testing"
 
 func TestRouter(t *testing.T) {
 	r := NewRouter()
@@ -24,25 +20,41 @@ func TestRouter(t *testing.T) {
 		handlerName = "h4"
 	}
 
+	var h1Name, h2Name string
+
 	equalHandler := func(h1 HandlerFunc, h2 HandlerFunc) bool {
+		h1Name = "nil"
+		h2Name = "nil"
 		if h1 == nil && h2 == nil {
 			return true
 		} else if h1 == nil || h2 == nil {
 			return false
 		}
 
-		h1(nil)
-		h1Name := handlerName
-		h2(nil)
-		h2Name := handlerName
+		c := NewContext()
+
+		handlerName = ""
+		h1(c)
+		h1Name = handlerName
+
+		handlerName = ""
+		h2(c)
+		h2Name = handlerName
 		return h1Name == h2Name
+	}
+
+	paramEqual := func(p1 Params, p2 Params) bool {
+		for i, p := range p1 {
+			if p2[i] != p {
+				return false
+			}
+		}
+		return true
 	}
 
 	r.GET("/tests", h1)
 	r.POST("/tests", h2)
 	r.HEAD("/tests", h3)
-	r.Any("/tests", h4)
-	r.Any("/tests/any", h4)
 	r.DELETE("/tests", h2)
 	r.PATCH("/change/:thing", h2)
 	r.PUT("/get/:thing/info", h2)
@@ -61,33 +73,30 @@ func TestRouter(t *testing.T) {
 	cases := []struct {
 		method, path string
 		handler      HandlerFunc
-		params       *url.Values
+		params       Params
 	}{
-		{"GET", "/tests", h1, &url.Values{}},
+		{"GET", "/tests", h1, Params{}},
 		{"GET", "tests", nil, nil},
 		{"GET", "tests/", nil, nil},
-		{"POST", "/tests", h2, &url.Values{}},
-		{"OPTIONS", "/tests", h4, &url.Values{}},
-		{"HEAD", "/tests", h3, &url.Values{}},
-		{"DELETE", "/tests", h2, &url.Values{}},
+		{"POST", "/tests", h2, Params{}},
+		{"HEAD", "/tests", h3, Params{}},
+		{"DELETE", "/tests", h2, Params{}},
 		{"PATCH", "/change", nil, nil},
 		{"PATCH", "/change/", nil, nil},
-		{"PATCH", "/change/world", h2, &url.Values{"thing": []string{"world"}}},
-		{"PUT", "/get/secret/info", h2, &url.Values{"thing": []string{"secret"}}},
-		{"OPTIONS", "/try/2/params/3", h1, &url.Values{"two": []string{"2"}, "togather": []string{"3"}}},
-		{"OPTIONS", "/same/test/params/test2", h1, &url.Values{"name": []string{"test2"}}},
+		{"PATCH", "/change/world", h2, Params{{"thing", "world"}}},
+		{"PUT", "/get/secret/info", h2, Params{{"thing", "secret"}}},
+		{"OPTIONS", "/try/2/params/3", h1, Params{{"two", "2"}, {"togather", "3"}}},
+		{"OPTIONS", "/same/test/params/test2", h1, Params{{"name", "test"}, {"name", "test2"}}},
 		{"HEAD", "/try/2/params/3", nil, nil},
-		{"OPTIONS", "/tests/any", h4, &url.Values{}},
-		{"GET", "/tests/any", h4, &url.Values{}},
-		{"GET", "/mount/hello", h3, &url.Values{}},
-		{"POST", "/mount/echo/nihao", h4, &url.Values{"word": []string{"nihao"}}},
-		{"GET", "/root", h2, &url.Values{}},
+		{"GET", "/mount/hello", h3, Params{}},
+		{"POST", "/mount/echo/nihao", h4, Params{{"word", "nihao"}}},
+		{"GET", "/root", h2, Params{}},
 	}
 
 	for i, c := range cases {
 		h, v := r.MatchRoute(c.path, c.method)
-		if !equalHandler(c.handler, h) || !reflect.DeepEqual(c.params, v) {
-			t.Errorf("Test case %d failed, expect handler: %v, params: %v; get handler %v, params: %v", i+1, c.handler, c.params, h, v)
+		if !equalHandler(c.handler, h) || !paramEqual(c.params, v) {
+			t.Errorf("Test case %d failed, expect handler: %s, params: %v; get handler %s, params: %v", i+1, h1Name, c.params, h2Name, v)
 		}
 	}
 

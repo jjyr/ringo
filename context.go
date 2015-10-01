@@ -3,13 +3,12 @@ package ringo
 import (
 	"fmt"
 	"net/http"
-	"net/url"
 )
 
 type Context struct {
 	*http.Request
 	http.ResponseWriter
-	Params *url.Values
+	Params Params
 }
 
 func NewContext() *Context {
