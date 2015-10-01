@@ -8,6 +8,14 @@ import (
 	"github.com/jjyr/ringo/middleware"
 )
 
+type usersController struct {
+	ringo.Controller
+}
+
+func (*usersController) List(c *ringo.Context) {
+	c.Render(200, "list users")
+}
+
 func main() {
 	flag.Parse()
 	app := ringo.NewApp()
@@ -23,10 +31,14 @@ func main() {
 		c.Render(200, "pong!")
 	})
 
-	app.GET("/numbers/:n/echo", func(c *ringo.Context) {
+	app.GET("/numbers/:n/echo/:n", func(c *ringo.Context) {
 		log.Print(c.URL.Query())
-		log.Print(c.Params.Get("n"))
+		log.Print(c.Params.ByName("n"))
 	})
+
+	u := usersController{}
+
+	app.AddController(&u)
 
 	app.Use(middleware.Recover())
 
