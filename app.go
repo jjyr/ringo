@@ -70,5 +70,5 @@ func (app *App) defaultHandleHTTPRequest(c *Context) {
 func handleNotFound(c *Context) {
 	statusCode := http.StatusNotFound
 	text := http.StatusText(statusCode)
-	c.Render(statusCode, text)
+	c.String(statusCode, text)
 }
