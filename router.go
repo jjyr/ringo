@@ -1,11 +1,8 @@
 package ringo
 
 import (
-	"fmt"
-	"log"
 	"net/http"
 	"path"
-	"regexp"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -53,20 +50,6 @@ type routeRegisterMap map[string]bool
 type Router struct {
 	routes []routeHandler
 	httprouter.Router
-}
-
-var pathParamRegexp *regexp.Regexp
-
-func init() {
-	pathParamRegexp = regexp.MustCompile("\\:(\\w+)(/|\\z)")
-}
-
-func compilePathExp(path string) (*regexp.Regexp, error) {
-	escaped := regexp.QuoteMeta(path)
-	log.Printf("escaped route path: %s", escaped)
-	replaced := pathParamRegexp.ReplaceAllString(escaped, "(?P<$1>\\w+)$2")
-	log.Printf("replaced route path: %s", replaced)
-	return regexp.Compile(fmt.Sprintf("\\A%s\\z", replaced))
 }
 
 func (r *Router) AddRoute(path string, method string, handler HandlerFunc) {
