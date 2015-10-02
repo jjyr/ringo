@@ -9,17 +9,26 @@ import (
 
 type Controllerable interface {
 	ControllerName() string
+	SetControllerName(string)
 }
 
 type Controller struct {
 	Name string
 }
 
+func (c *Controller) ControllerName() string {
+	return c.Name
+}
+
+func (c *Controller) SetControllerName(name string) {
+	c.Name = name
+}
+
 func isAlphabetUpper(s string) bool {
 	return strings.ToUpper(s) == s
 }
 
-func getControllerName(c Controllerable) string {
+func GetControllerName(c Controllerable) string {
 	name := c.ControllerName()
 
 	if name == "" {
@@ -44,48 +53,69 @@ func getControllerName(c Controllerable) string {
 					}
 					// test-ringo
 					name += strings.ToLower(s)
+					prev = s
 				}
 			}
 		}
+
+		c.SetControllerName(name)
 	}
 
 	return name
 }
 
-func (c *Controller) ControllerName() string {
-	return c.Name
+type ControllerRouterOption struct {
+	Handler    string
+	Method     []string
+	Path       string
+	NamePrefix string
+	NameSuffix string
+	Member     bool
+	Collection bool
 }
 
-type controllerHandlerRouteDescription struct {
-	handlerName string
-	method      string
-	path        string
-}
-
-var controllerHandlerRouteDescriptions []controllerHandlerRouteDescription
+var controllerDefaultRouterOptions []ControllerRouterOption
 
 func init() {
-	controllerHandlerRouteDescriptions = []controllerHandlerRouteDescription{
-		{handlerName: "List", method: "GET", path: ""},
-		{handlerName: "Create", method: "POST", path: ""},
-		{handlerName: "Get", method: "GET", path: "/:id"},
-		{handlerName: "Delete", method: "DELETE", path: "/:id"},
-		{handlerName: "Update", method: "PUT", path: "/:id"},
+	controllerDefaultRouterOptions = []ControllerRouterOption{
+		{Handler: "List", Method: []string{"GET"}, Collection: true},
+		{Handler: "Create", Method: []string{"POST"}, Collection: true},
+		{Handler: "Get", Method: []string{"GET"}, Member: true},
+		{Handler: "Delete", Method: []string{"DELETE"}, Member: true},
+		{Handler: "Update", Method: []string{"PUT", "PATCH"}, Member: true},
+		{Handler: "New", Method: []string{"GET"}, Collection: true, NamePrefix: "new-"},
+		{Handler: "Edit", Method: []string{"GET"}, Member: true, Path: "/edit"},
 	}
 }
 
-func registerToRouter(r *Router, c Controllerable) {
-	controllerName := getControllerName(c)
+func pathFromRouterOption(c Controllerable, routerOption ControllerRouterOption) string {
+	if routerOption.Member == routerOption.Collection {
+		panic(fmt.Errorf("Router option must be member or collection"))
+	}
+	controllerName := routerOption.NamePrefix + GetControllerName(c) + routerOption.NameSuffix
+	routerPath := path.Join("/", controllerName)
+	if routerOption.Member {
+		routerPath = path.Join(routerPath, "/:id")
+	}
+	routerPath = path.Join(routerPath, routerOption.Path)
+
+	return routerPath
+}
+
+func registerToRouter(r *Router, c Controllerable, otherRouters ...ControllerRouterOption) {
+	controllerName := GetControllerName(c)
 	if controllerName == "" {
 		panic(fmt.Errorf("Controller Name is empty, %+v", c))
 	}
 	controller := reflect.ValueOf(c)
-	for _, handlerRoute := range controllerHandlerRouteDescriptions {
-		handlerValue := controller.MethodByName(handlerRoute.handlerName)
+	for _, routerOption := range append(controllerDefaultRouterOptions, otherRouters...) {
+		handlerValue := controller.MethodByName(routerOption.Handler)
 		if handlerValue.IsValid() {
-			r.AddRoute(path.Join("/", controllerName, handlerRoute.path), handlerRoute.method, func(context *Context) {
-				handlerValue.Call([]reflect.Value{reflect.ValueOf(context)})
-			})
+			for _, m := range routerOption.Method {
+				r.AddRoute(pathFromRouterOption(c, routerOption), m, func(context *Context) {
+					handlerValue.Call([]reflect.Value{reflect.ValueOf(context)})
+				})
+			}
 		}
 	}
 }
