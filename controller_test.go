@@ -44,6 +44,14 @@ func (*usersController) Get(c *Context) {
 	actionName = "Get"
 	id = c.Params.ByName("id")
 }
+func (*usersController) MemberCustome(c *Context) {
+	actionName = "MemberCustome"
+	id = c.Params.ByName("id")
+}
+func (*usersController) CollectionCustome(c *Context) {
+	actionName = "CollectionCustome"
+	id = c.Params.ByName("id")
+}
 
 func TestController(t *testing.T) {
 
@@ -75,10 +83,15 @@ func TestController(t *testing.T) {
 		{"PUT", "/users/1", "Update", "1"},
 		{"PATCH", "/users/1", "Update", "1"},
 		{"DELETE", "/users/2", "Delete", "2"},
+		{"POST", "/users/2/custome", "MemberCustome", "2"},
+		{"POST", "/user/custome", "CollectionCustome", ""},
 	}
 
 	r := NewRouter()
-	r.AddController(&usersController{})
+	r.AddController(&usersController{},
+		ControllerRouterOption{Member: true, Path: "custome", Method: []string{"POST"}, Handler: "MemberCustome"},
+		ControllerRouterOption{Collection: true, Path: "custome", Name: "user", Method: []string{"POST"}, Handler: "CollectionCustome"},
+	)
 	context := NewContext()
 	for i, c := range cases {
 		id = "nil"

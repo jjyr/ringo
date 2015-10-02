@@ -68,6 +68,7 @@ type ControllerRouterOption struct {
 	Handler    string
 	Method     []string
 	Path       string
+	Name       string
 	NamePrefix string
 	NameSuffix string
 	Member     bool
@@ -92,7 +93,11 @@ func pathFromRouterOption(c Controllerable, routerOption ControllerRouterOption)
 	if routerOption.Member == routerOption.Collection {
 		panic(fmt.Errorf("Router option must be member or collection"))
 	}
-	controllerName := routerOption.NamePrefix + GetControllerName(c) + routerOption.NameSuffix
+	controllerName := routerOption.Name
+	if controllerName == "" {
+		controllerName = GetControllerName(c)
+	}
+	controllerName = routerOption.NamePrefix + controllerName + routerOption.NameSuffix
 	routerPath := path.Join("/", controllerName)
 	if routerOption.Member {
 		routerPath = path.Join(routerPath, "/:id")
