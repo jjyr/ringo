@@ -89,8 +89,8 @@ func TestController(t *testing.T) {
 
 	r := NewRouter()
 	r.AddController(&usersController{},
-		ControllerRouterOption{Member: true, Path: "custome", Method: []string{"POST"}, Handler: "MemberCustome"},
-		ControllerRouterOption{Collection: true, Path: "custome", Name: "user", Method: []string{"POST"}, Handler: "CollectionCustome"},
+		ControllerRouterOption{Member: true, Path: "custome", Method: "POST", Handler: "MemberCustome"},
+		ControllerRouterOption{Collection: true, Path: "custome", Name: "user", Method: "POST", Handler: "CollectionCustome"},
 	)
 	context := NewContext()
 	for i, c := range cases {

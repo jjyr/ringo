@@ -66,7 +66,8 @@ func GetControllerName(c Controllerable) string {
 
 type ControllerRouterOption struct {
 	Handler    string
-	Method     []string
+	Method     string
+	Methods    []string
 	Path       string
 	Name       string
 	NamePrefix string
@@ -75,24 +76,36 @@ type ControllerRouterOption struct {
 	Collection bool
 }
 
+// validate value
+func (routerOption *ControllerRouterOption) Confirm() {
+	if routerOption.Member == routerOption.Collection {
+		panic(fmt.Errorf("Router option must be member or collection"))
+	}
+
+	if routerOption.Method != "" {
+		routerOption.Methods = append(routerOption.Methods, routerOption.Method)
+	}
+
+	if len(routerOption.Methods) == 0 {
+		panic(fmt.Errorf("Router option must provide at least one method"))
+	}
+}
+
 var controllerDefaultRouterOptions []ControllerRouterOption
 
 func init() {
 	controllerDefaultRouterOptions = []ControllerRouterOption{
-		{Handler: "List", Method: []string{"GET"}, Collection: true},
-		{Handler: "Create", Method: []string{"POST"}, Collection: true},
-		{Handler: "Get", Method: []string{"GET"}, Member: true},
-		{Handler: "Delete", Method: []string{"DELETE"}, Member: true},
-		{Handler: "Update", Method: []string{"PUT", "PATCH"}, Member: true},
-		{Handler: "New", Method: []string{"GET"}, Collection: true, NamePrefix: "new-"},
-		{Handler: "Edit", Method: []string{"GET"}, Member: true, Path: "/edit"},
+		{Handler: "List", Method: "GET", Collection: true},
+		{Handler: "Create", Method: "POST", Collection: true},
+		{Handler: "Get", Method: "GET", Member: true},
+		{Handler: "Delete", Method: "DELETE", Member: true},
+		{Handler: "Update", Methods: []string{"PUT", "PATCH"}, Member: true},
+		{Handler: "New", Method: "GET", Collection: true, NamePrefix: "new-"},
+		{Handler: "Edit", Method: "GET", Member: true, Path: "/edit"},
 	}
 }
 
 func pathFromRouterOption(c Controllerable, routerOption ControllerRouterOption) string {
-	if routerOption.Member == routerOption.Collection {
-		panic(fmt.Errorf("Router option must be member or collection"))
-	}
 	controllerName := routerOption.Name
 	if controllerName == "" {
 		controllerName = GetControllerName(c)
@@ -114,9 +127,10 @@ func registerToRouter(r *Router, c Controllerable, otherRouters ...ControllerRou
 	}
 	controller := reflect.ValueOf(c)
 	for _, routerOption := range append(controllerDefaultRouterOptions, otherRouters...) {
+		routerOption.Confirm()
 		handlerValue := controller.MethodByName(routerOption.Handler)
 		if handlerValue.IsValid() {
-			for _, m := range routerOption.Method {
+			for _, m := range routerOption.Methods {
 				r.AddRoute(pathFromRouterOption(c, routerOption), m, func(context *Context) {
 					handlerValue.Call([]reflect.Value{reflect.ValueOf(context)})
 				})
