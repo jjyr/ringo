@@ -1,6 +1,9 @@
 package ringo
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 type ResponseWriter struct {
 	http.ResponseWriter
@@ -40,23 +43,21 @@ func (w *ResponseWriter) CleanBuffer() {
 }
 
 func (w *ResponseWriter) Flush() bool {
-	flushed := false
+	if w.flushed {
+		panic(fmt.Errorf("ResponseWriter is flushed"))
+	}
+
 	if w.Written() {
 		if w.statusCode > 0 {
 			w.ResponseWriter.WriteHeader(w.statusCode)
-			w.statusCode = 0
-			flushed = true
+			w.flushed = true
 		}
 
 		if len(w.content) > 0 {
 			w.ResponseWriter.Write(w.content)
-			w.content = nil
-			flushed = true
+			w.flushed = true
 		}
 	}
 
-	if flushed {
-		w.flushed = true
-	}
-	return flushed
+	return w.flushed
 }
