@@ -1,12 +1,12 @@
 # Ringo [![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](http://godoc.org/github.com/jjyr/ringo) [![Build Status](https://travis-ci.org/jjyr/ringo.svg?branch=master)](https://travis-ci.org/jjyr/ringo)
 
-Yet another web framework for Go.
+Yet another MVC web framework for Go, inspired from rails, gin.
 
-Ringo is still in developing, think again before use in production.
+## README!!
 
-## Guide
+Ringo is still in developing.
 
-Hi, here's no guide currently, check [examples](examples) to find some usage.
+Here's no guide yet, check [examples](examples) to find some usage.
 
 ## Contribute
 
