@@ -1,7 +1,6 @@
 package ringo
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/jjyr/ringo/render"
@@ -17,24 +16,22 @@ func NewContext() *Context {
 	return &Context{}
 }
 
-func (c *Context) String(statusCode int, content interface{}) {
-	w := c.ResponseWriter.(*ResponseWriter)
-	var byteContent []byte
+func (c *Context) String(statusCode int, format string, contents ...interface{}) {
+	c.Render(statusCode, &render.TextData{Format: format, Contents: contents})
+}
 
-	switch content.(type) {
-	case []byte:
-		byteContent = content.([]byte)
-	default:
-		byteContent = []byte(fmt.Sprint(content))
+func (c *Context) Render(statusCode int, r render.Renderable) {
+	c.WriteHeader(statusCode)
+	if err := r.Render(c.ResponseWriter); err != nil {
+		panic(err)
 	}
-	w.WriteHeader(statusCode)
-	w.Write(byteContent)
+	c.ResponseWriter.(*ResponseWriter).Flush()
 }
 
 func (c *Context) Rendered() bool {
-	return c.ResponseWriter.(*ResponseWriter).Written()
+	return c.ResponseWriter.(*ResponseWriter).Flushed()
 }
 
 func (c *Context) JSON(statusCode int, content interface{}) {
-	render.JSON(c.ResponseWriter, statusCode, content)
+	c.Render(statusCode, &render.JSONData{Content: content})
 }

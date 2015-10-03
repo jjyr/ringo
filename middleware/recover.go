@@ -16,7 +16,7 @@ func Recover() ringo.MiddlewareFunc {
 					if !c.Rendered() {
 						statusCode := http.StatusInternalServerError
 						text := http.StatusText(statusCode)
-						c.Render(statusCode, text)
+						c.String(statusCode, text)
 					}
 				}
 			}()
