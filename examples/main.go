@@ -12,8 +12,25 @@ type usersController struct {
 	ringo.Controller
 }
 
+type User struct {
+	Name string `json:"name" validate:"required"`
+	Age  int    `json:"age"`
+}
+
 func (*usersController) List(c *ringo.Context) {
 	c.String(200, "list users")
+}
+
+func (*usersController) Create(c *ringo.Context) {
+	u := User{}
+	if err := c.Bind(&u); err != nil {
+		panic(err)
+	}
+	resp := struct {
+		UserInfo *User
+		Message  string `json:message`
+	}{UserInfo: &u, Message: "hello"}
+	c.JSON(200, resp)
 }
 
 func (*usersController) SayHehe(c *ringo.Context) {
