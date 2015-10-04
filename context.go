@@ -3,6 +3,7 @@ package ringo
 import (
 	"net/http"
 
+	"github.com/jjyr/ringo/binding"
 	"github.com/jjyr/ringo/render"
 )
 
@@ -14,6 +15,10 @@ type Context struct {
 
 func NewContext() *Context {
 	return &Context{}
+}
+
+func (c *Context) ContentType() string {
+	return c.Request.Header.Get("Content-Type")
 }
 
 func (c *Context) String(statusCode int, format string, contents ...interface{}) {
@@ -34,4 +39,14 @@ func (c *Context) Rendered() bool {
 
 func (c *Context) JSON(statusCode int, content interface{}) {
 	c.Render(statusCode, &render.JSONData{Content: content})
+}
+
+// Bind
+func (c *Context) Bind(obj interface{}) error {
+	b := binding.Default(c.Request.Method, c.ContentType())
+	return c.BindWith(obj, b)
+}
+
+func (c *Context) BindWith(obj interface{}, b binding.Binder) error {
+	return binding.BindWith(c.Request, obj, b)
 }
