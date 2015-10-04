@@ -52,8 +52,16 @@ func (app *App) applyMiddlewares(handler HandlerFunc) HandlerFunc {
 }
 
 func (app *App) defaultHandleHTTPRequest(c *Context) {
-	handler, params := app.Router.MatchRoute(c.Request.URL.Path, c.Request.Method)
+	requestPath := c.Request.URL.Path
+	handler, params, redirect := app.Router.MatchRoute(requestPath, c.Request.Method)
 	c.Params = params
+
+	if redirect {
+		// handle redirect without trailing slash
+		handler = func(c *Context) {
+			c.Redirect(301, requestPath[:len(requestPath)-1])
+		}
+	}
 
 	if handler == nil {
 		handler = handleNotFound

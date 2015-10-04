@@ -37,6 +37,15 @@ func (c *Context) Rendered() bool {
 	return c.ResponseWriter.(*ResponseWriter).Flushed()
 }
 
+func (c *Context) Redirect(code int, location string) {
+	// make rendered check correct
+	c.Render(code, &render.Redirect{
+		Code:     code,
+		Location: location,
+		Request:  c.Request,
+	})
+}
+
 func (c *Context) JSON(statusCode int, content interface{}) {
 	c.Render(statusCode, &render.JSONData{Content: content})
 }

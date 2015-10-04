@@ -65,8 +65,8 @@ func (r *Router) AddRoute(path string, method string, handler HandlerFunc) {
 	r.routes = append(r.routes, route)
 }
 
-func (r *Router) MatchRoute(path string, method string) (handler HandlerFunc, params Params) {
-	rawHandler, rawParams, _ := r.Lookup(method, path)
+func (r *Router) MatchRoute(path string, method string) (handler HandlerFunc, params Params, redirect bool) {
+	rawHandler, rawParams, redirect := r.Lookup(method, path)
 	params = Params(rawParams)
 
 	if rawHandler != nil {
