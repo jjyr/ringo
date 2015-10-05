@@ -94,10 +94,14 @@ func TestRouter(t *testing.T) {
 	}
 
 	for i, c := range cases {
-		h, v := r.MatchRoute(c.path, c.method)
+		h, v, _ := r.MatchRoute(c.path, c.method)
 		if !equalHandler(c.handler, h) || !paramEqual(c.params, v) {
 			t.Errorf("Test case %d failed, expect handler: %s, params: %v; get handler %s, params: %v", i+1, h1Name, c.params, h2Name, v)
 		}
+	}
+
+	if _, _, redirect := r.MatchRoute("/root/", "GET"); !redirect {
+		t.Errorf("redirect path not work!")
 	}
 
 	func() {

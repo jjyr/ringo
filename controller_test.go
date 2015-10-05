@@ -96,7 +96,7 @@ func TestController(t *testing.T) {
 	for i, c := range cases {
 		id = "nil"
 		actionName = "nil"
-		h, _ := r.MatchRoute(c.path, c.method)
+		h, _, _ := r.MatchRoute(c.path, c.method)
 		h(context)
 		if actionName != c.handler || id != c.id {
 			t.Errorf("Test case %d failed, expect action: %s, id: %v; get handler %s, id: %v", i+1, c.handler, c.id, actionName, id)

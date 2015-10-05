@@ -70,8 +70,8 @@ type ControllerRouterOption struct {
 	Methods    []string
 	Path       string
 	Name       string
-	NamePrefix string
-	NameSuffix string
+	Prefix     string
+	Suffix     string
 	Member     bool
 	Collection bool
 }
@@ -100,7 +100,7 @@ func init() {
 		{Handler: "Get", Method: "GET", Member: true},
 		{Handler: "Delete", Method: "DELETE", Member: true},
 		{Handler: "Update", Methods: []string{"PUT", "PATCH"}, Member: true},
-		{Handler: "New", Method: "GET", Collection: true, NamePrefix: "new-"},
+		{Handler: "New", Method: "GET", Collection: true, Prefix: "new-"},
 		{Handler: "Edit", Method: "GET", Member: true, Path: "/edit"},
 	}
 }
@@ -110,7 +110,7 @@ func pathFromRouterOption(c Controllerable, routerOption ControllerRouterOption)
 	if controllerName == "" {
 		controllerName = GetControllerName(c)
 	}
-	controllerName = routerOption.NamePrefix + controllerName + routerOption.NameSuffix
+	controllerName = routerOption.Prefix + controllerName + routerOption.Suffix
 	routerPath := path.Join("/", controllerName)
 	if routerOption.Member {
 		routerPath = path.Join(routerPath, "/:id")
