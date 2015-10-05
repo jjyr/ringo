@@ -34,7 +34,7 @@ func (c *Context) Render(statusCode int, r render.Renderable) {
 }
 
 func (c *Context) Rendered() bool {
-	return c.ResponseWriter.(*ResponseWriter).Flushed()
+	return c.ResponseWriter.(*ResponseWriter).Written()
 }
 
 func (c *Context) Redirect(code int, location string) {
