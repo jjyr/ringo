@@ -8,12 +8,15 @@ import (
 )
 
 type ControllerManage struct {
-	controllers map[string]controllerRegistry
-	router      *Router
+	controllers              map[string]controllerRegistry
+	router                   *Router
+	controllerRoutePathCache map[string]string
 }
 
 func newControllerManage(router *Router) *ControllerManage {
-	return &ControllerManage{router: router, controllers: make(map[string]controllerRegistry)}
+	controllerManage := &ControllerManage{router: router, controllers: make(map[string]controllerRegistry)}
+	controllerManage.controllerRoutePathCache = make(map[string]string)
+	return controllerManage
 }
 
 type ControllerOption struct {
@@ -79,22 +82,34 @@ func (m *ControllerManage) registerController(c Controllerable, controllerOption
 	m.controllers[name] = controllerRegistry{controller: c, controllerOption: controllerOption}
 }
 
-// FindControllerRoutePath Find controller action path, return first path if multi route registered, panic if not found
-// paramvalue are pairs of param/value like "id", "2"
-func (m *ControllerManage) FindControllerRoutePath(name string, handler string, paramvalue ...string) string {
+func (m *ControllerManage) findRoutePath(name string, handler string) string {
 	controllerEntry := m.controllers[name]
 	for _, routeOption := range append(controllerDefaultRouteOptions, controllerEntry.controller.GetRoutes()...) {
 		if routeOption.Handler == handler {
-			routePath := controllerRoutePathFromOption(controllerEntry.controller, controllerEntry.controllerOption, routeOption)
-			if len(paramvalue) > 0 {
-				for i := 0; i < len(paramvalue); i += 2 {
-					paramvalue[i] = ":" + paramvalue[i]
-				}
-				routePath = strings.NewReplacer(paramvalue...).Replace(routePath)
-			}
-			return routePath
+			return controllerRoutePathFromOption(controllerEntry.controller, controllerEntry.controllerOption, routeOption)
 		}
 	}
 
-	panic(fmt.Errorf("Cannot find handler '%s' in controller '%s'", handler, name))
+	return ""
+}
+
+// FindControllerRoutePath Find controller action path, return first path if multi route registered, panic if not found
+// paramvalue are pairs of param/value like "id", "2"
+func (m *ControllerManage) FindControllerRoutePath(name string, handler string, paramvalue ...string) string {
+	key := fmt.Sprintf("%s#%s", name, handler)
+	routePath, ok := m.controllerRoutePathCache[key]
+	if !ok {
+		routePath = m.findRoutePath(name, handler)
+		if routePath == "" {
+			panic(fmt.Errorf("Cannot find handler '%s' in controller '%s'", handler, name))
+		}
+		m.controllerRoutePathCache[key] = routePath
+	}
+	if len(paramvalue) > 0 {
+		for i := 0; i < len(paramvalue); i += 2 {
+			paramvalue[i] = ":" + paramvalue[i]
+		}
+		routePath = strings.NewReplacer(paramvalue...).Replace(routePath)
+	}
+	return routePath
 }
