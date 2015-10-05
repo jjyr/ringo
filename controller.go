@@ -2,18 +2,19 @@ package ringo
 
 import (
 	"fmt"
-	"path"
-	"reflect"
 	"strings"
 )
 
 type Controllerable interface {
 	ControllerName() string
 	SetControllerName(string)
+	AddRoutes(...ControllerRouteOption)
+	GetRoutes() []ControllerRouteOption
 }
 
 type Controller struct {
-	Name string
+	Name   string
+	routes []ControllerRouteOption
 }
 
 func (c *Controller) ControllerName() string {
@@ -21,13 +22,30 @@ func (c *Controller) ControllerName() string {
 }
 
 func (c *Controller) SetControllerName(name string) {
+	if c.ControllerName() != "" {
+		panic(fmt.Errorf("Should not override non empty controller name"))
+	}
 	c.Name = name
+}
+
+// AddRoute add customize route to controller
+func (c *Controller) AddRoutes(routeOptions ...ControllerRouteOption) {
+	for _, routeOption := range routeOptions {
+		// check option
+		routeOption.confirm()
+		c.routes = append(c.routes, routeOption)
+	}
+}
+
+func (c *Controller) GetRoutes() []ControllerRouteOption {
+	return c.routes
 }
 
 func isAlphabetUpper(s string) bool {
 	return strings.ToUpper(s) == s
 }
 
+// GetControllerName return controller name, generate by type name if not manually set
 func GetControllerName(c Controllerable) string {
 	name := c.ControllerName()
 
@@ -64,20 +82,20 @@ func GetControllerName(c Controllerable) string {
 	return name
 }
 
-type ControllerRouterOption struct {
+type ControllerRouteOption struct {
 	Handler    string
 	Method     string
 	Methods    []string
 	Path       string
-	Name       string
 	Prefix     string
+	Name       string
 	Suffix     string
 	Member     bool
 	Collection bool
 }
 
 // validate value
-func (routerOption *ControllerRouterOption) Confirm() {
+func (routerOption *ControllerRouteOption) confirm() {
 	if routerOption.Member == routerOption.Collection {
 		panic(fmt.Errorf("Router option must be member or collection"))
 	}
@@ -91,10 +109,10 @@ func (routerOption *ControllerRouterOption) Confirm() {
 	}
 }
 
-var controllerDefaultRouterOptions []ControllerRouterOption
+var controllerDefaultRouteOptions []ControllerRouteOption
 
 func init() {
-	controllerDefaultRouterOptions = []ControllerRouterOption{
+	controllerDefaultRouteOptions = []ControllerRouteOption{
 		{Handler: "List", Method: "GET", Collection: true},
 		{Handler: "Create", Method: "POST", Collection: true},
 		{Handler: "Get", Method: "GET", Member: true},
@@ -103,38 +121,9 @@ func init() {
 		{Handler: "New", Method: "GET", Collection: true, Prefix: "new-"},
 		{Handler: "Edit", Method: "GET", Member: true, Path: "/edit"},
 	}
-}
 
-func pathFromRouterOption(c Controllerable, routerOption ControllerRouterOption) string {
-	controllerName := routerOption.Name
-	if controllerName == "" {
-		controllerName = GetControllerName(c)
-	}
-	controllerName = routerOption.Prefix + controllerName + routerOption.Suffix
-	routerPath := path.Join("/", controllerName)
-	if routerOption.Member {
-		routerPath = path.Join(routerPath, "/:id")
-	}
-	routerPath = path.Join(routerPath, routerOption.Path)
-
-	return routerPath
-}
-
-func registerToRouter(r *Router, c Controllerable, otherRouters ...ControllerRouterOption) {
-	controllerName := GetControllerName(c)
-	if controllerName == "" {
-		panic(fmt.Errorf("Controller Name is empty, %+v", c))
-	}
-	controller := reflect.ValueOf(c)
-	for _, routerOption := range append(controllerDefaultRouterOptions, otherRouters...) {
-		routerOption.Confirm()
-		handlerValue := controller.MethodByName(routerOption.Handler)
-		if handlerValue.IsValid() {
-			for _, m := range routerOption.Methods {
-				r.AddRoute(pathFromRouterOption(c, routerOption), m, func(context *Context) {
-					handlerValue.Call([]reflect.Value{reflect.ValueOf(context)})
-				})
-			}
-		}
+	for i, routeOption := range controllerDefaultRouteOptions {
+		routeOption.confirm()
+		controllerDefaultRouteOptions[i] = routeOption
 	}
 }

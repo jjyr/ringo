@@ -14,6 +14,7 @@ type Context struct {
 	http.ResponseWriter
 	Params   Params
 	metadata map[string]interface{}
+	app      *App
 }
 
 // check context.Context interface
@@ -25,6 +26,11 @@ func NewContext() *Context {
 
 func (c *Context) ContentType() string {
 	return c.Request.Header.Get("Content-Type")
+}
+
+// FindControllerRoutePath Find controller action path, return first path if multi route registered, panic if not found
+func (c *Context) FindControllerRoutePath(name string, handler string) string {
+	return c.app.FindControllerRoutePath(name, handler)
 }
 
 // Set key value pair

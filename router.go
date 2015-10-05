@@ -1,6 +1,7 @@
 package ringo
 
 import (
+	"log"
 	"net/http"
 	"path"
 
@@ -35,10 +36,6 @@ func (router *Router) Mount(mountPath string, mountedRouter *Router) {
 	}
 }
 
-func (r *Router) AddController(controller Controllerable, routerOptions ...ControllerRouterOption) {
-	registerToRouter(r, controller, routerOptions...)
-}
-
 type routeHandler struct {
 	method  string
 	path    string
@@ -53,6 +50,7 @@ type Router struct {
 }
 
 func (r *Router) AddRoute(path string, method string, handler HandlerFunc) {
+	log.Printf("Add handler '%s' -> [%s]%s", handler, method, path)
 	r.Router.Handle(method, path, func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		c := w.(*Context)
 		c.Request = r

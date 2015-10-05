@@ -10,10 +10,12 @@ type App struct {
 	*Router
 	middlewares       []MiddlewareFunc
 	handleHTTPRequest HandlerFunc
+	*ControllerManage
 }
 
 func NewApp() *App {
-	return &App{Router: NewRouter()}
+	defaultRouter := NewRouter()
+	return &App{Router: defaultRouter, ControllerManage: newControllerManage(defaultRouter)}
 }
 
 func (app *App) Use(middlewreFunc MiddlewareFunc) {

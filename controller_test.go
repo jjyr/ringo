@@ -87,18 +87,22 @@ func TestController(t *testing.T) {
 		{"POST", "/user/custome", "CollectionCustome", ""},
 	}
 
-	r := NewRouter()
-	r.AddController(&usersController{},
-		ControllerRouterOption{Member: true, Path: "custome", Method: "POST", Handler: "MemberCustome"},
-		ControllerRouterOption{Collection: true, Path: "custome", Name: "user", Method: "POST", Handler: "CollectionCustome"},
+	r := NewApp()
+	users := &usersController{}
+	users.AddRoutes(
+		ControllerRouteOption{Member: true, Path: "custome", Method: "POST", Handler: "MemberCustome"},
+		ControllerRouteOption{Collection: true, Path: "custome", Name: "user", Method: "POST", Handler: "CollectionCustome"},
 	)
+	r.AddController(users, nil)
 	context := NewContext()
 	for i, c := range cases {
 		id = "nil"
 		actionName = "nil"
 		h, _, _ := r.MatchRoute(c.path, c.method)
-		h(context)
-		if actionName != c.handler || id != c.id {
+		if h != nil {
+			h(context)
+		}
+		if h == nil || actionName != c.handler || id != c.id {
 			t.Errorf("Test case %d failed, expect action: %s, id: %v; get handler %s, id: %v", i+1, c.handler, c.id, actionName, id)
 		}
 	}
