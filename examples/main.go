@@ -58,13 +58,13 @@ func main() {
 	})
 
 	app.GET("/numbers/:n/echo/:n", func(c *ringo.Context) {
-		log.Print(c.URL.Query())
+		log.Print(c.Request.URL.Query())
 		log.Print(c.Params.ByName("n"))
 	})
 
 	u := usersController{}
-
-	app.AddController(&u, ringo.ControllerRouterOption{Handler: "SayHehe", Method: "GET", Member: true, Path: "hehe"})
+	u.AddRoutes(ringo.ControllerRouteOption{Handler: "SayHehe", Method: "GET", Member: true, Path: "hehe"})
+	app.AddController(&u, nil)
 
 	app.Use(middleware.Recover())
 
