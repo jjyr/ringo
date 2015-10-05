@@ -65,7 +65,7 @@ func (app *App) defaultHandleHTTPRequest(c *Context) {
 
 	if handler == nil {
 		handler = handleNotFound
-		log.Printf("Not found route for %s", c.RequestURI)
+		log.Printf("Not found route for %s", c.Request.RequestURI)
 	}
 
 	handler(c)

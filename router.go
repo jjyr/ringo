@@ -54,11 +54,10 @@ type Router struct {
 
 func (r *Router) AddRoute(path string, method string, handler HandlerFunc) {
 	r.Router.Handle(method, path, func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-		var c Context
-		c.ResponseWriter = w
+		c := w.(*Context)
 		c.Request = r
 		c.Params = Params(params)
-		handler(&c)
+		handler(c)
 	})
 
 	route := routeHandler{path: path, method: method, handler: handler}
@@ -71,7 +70,7 @@ func (r *Router) MatchRoute(path string, method string) (handler HandlerFunc, pa
 
 	if rawHandler != nil {
 		handler = func(c *Context) {
-			rawHandler(c.ResponseWriter, c.Request, rawParams)
+			rawHandler(c, c.Request, rawParams)
 		}
 	}
 

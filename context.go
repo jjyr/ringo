@@ -8,7 +8,7 @@ import (
 )
 
 type Context struct {
-	*http.Request
+	Request *http.Request
 	http.ResponseWriter
 	Params Params
 }
@@ -48,6 +48,10 @@ func (c *Context) Redirect(code int, location string) {
 
 func (c *Context) JSON(statusCode int, content interface{}) {
 	c.Render(statusCode, &render.JSONData{Content: content})
+}
+
+func (c *Context) File(file string) {
+	http.ServeFile(c.ResponseWriter, c.Request, file)
 }
 
 // Bind
