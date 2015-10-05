@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path"
 	"reflect"
+	"strings"
 )
 
 type ControllerManage struct {
@@ -79,11 +80,19 @@ func (m *ControllerManage) registerController(c Controllerable, controllerOption
 }
 
 // FindControllerRoutePath Find controller action path, return first path if multi route registered, panic if not found
-func (m *ControllerManage) FindControllerRoutePath(name string, handler string) string {
+// paramvalue are pairs of param/value like "id", "2"
+func (m *ControllerManage) FindControllerRoutePath(name string, handler string, paramvalue ...string) string {
 	controllerEntry := m.controllers[name]
 	for _, routeOption := range append(controllerDefaultRouteOptions, controllerEntry.controller.GetRoutes()...) {
 		if routeOption.Handler == handler {
-			return controllerRoutePathFromOption(controllerEntry.controller, controllerEntry.controllerOption, routeOption)
+			routePath := controllerRoutePathFromOption(controllerEntry.controller, controllerEntry.controllerOption, routeOption)
+			if len(paramvalue) > 0 {
+				for i := 0; i < len(paramvalue); i += 2 {
+					paramvalue[i] = ":" + paramvalue[i]
+				}
+				routePath = strings.NewReplacer(paramvalue...).Replace(routePath)
+			}
+			return routePath
 		}
 	}
 

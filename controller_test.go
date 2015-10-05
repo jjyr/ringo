@@ -111,6 +111,36 @@ func TestController(t *testing.T) {
 		}
 	}
 
+	// find controller route path case
+	pathCases := []struct {
+		controller, handler, path string
+		paramvalue                []string
+	}{
+		{"users", "List", "/users", nil},
+		{"users", "Get", "/users/1", []string{"id", "1"}},
+		{"users", "Edit", "/users/editor/edit", []string{"id", "editor"}},
+		{"users", "Edit", "/users/3/edit", []string{"id", "3"}},
+		{"users", "New", "/new-users", nil},
+		{"users", "Create", "/users", nil},
+		{"users", "Update", "/users/lastman", []string{"id", "lastman"}},
+		{"users", "Delete", "/users/2", []string{"id", "2"}},
+		{"users", "MemberCustome", "/users/2/custome", []string{"id", "2"}},
+		{"users", "CollectionCustome", "/user/custome", nil},
+	}
+
+	for i, c := range pathCases {
+		routePath := r.FindControllerRoutePath(c.controller, c.handler, c.paramvalue...)
+		if routePath != c.path {
+			t.Errorf("Test case %d failed, find route path '%s#%s', expect '%s' get '%s'", i+1, c.controller, c.handler, c.path, routePath)
+		}
+	}
+
+	func() {
+		defer func() { recover() }()
+		r.FindControllerRoutePath("void", "nothing")
+		t.Errorf("Find no exists route path should panic")
+	}()
+
 	func() {
 		defer func() { recover() }()
 		users.AddRoutes(ControllerRouteOption{Member: true, Collection: true, Path: "crash", Handler: "MemberCustome"})
