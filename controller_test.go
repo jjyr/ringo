@@ -16,6 +16,10 @@ type SECURYController struct {
 	Controller
 }
 
+type anotherUsersController struct {
+	Controller
+}
+
 func (*usersController) New(c *Context) {
 	actionName = "New"
 	id = c.Params.ByName("id")
@@ -106,4 +110,18 @@ func TestController(t *testing.T) {
 			t.Errorf("Test case %d failed, expect action: %s, id: %v; get handler %s, id: %v", i+1, c.handler, c.id, actionName, id)
 		}
 	}
+
+	func() {
+		defer func() { recover() }()
+		users.AddRoutes(ControllerRouteOption{Member: true, Collection: true, Path: "crash", Handler: "MemberCustome"})
+		t.Errorf("RouteOption invalid should panic")
+	}()
+
+	func() {
+		defer func() { recover() }()
+		users := &anotherUsersController{}
+		users.Name = "users"
+		r.AddController(users, nil)
+		t.Errorf("Add same name controller should panic")
+	}()
 }
