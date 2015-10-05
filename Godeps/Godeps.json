@@ -8,6 +8,10 @@
 			"Rev": "dc1fe666a058716f962aaabbb3e55fb825266f97"
 		},
 		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "84ba27dd5b2d8135e9da1395277f2c9333a2ffda"
+		},
+		{
 			"ImportPath": "gopkg.in/go-playground/validator.v8",
 			"Comment": "v8.3",
 			"Rev": "7bfad4079388e3aac08d67b91bf381c99605f4d9"

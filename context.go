@@ -2,16 +2,22 @@ package ringo
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/jjyr/ringo/binding"
 	"github.com/jjyr/ringo/render"
+	"golang.org/x/net/context"
 )
 
 type Context struct {
 	Request *http.Request
 	http.ResponseWriter
-	Params Params
+	Params   Params
+	metadata map[string]interface{}
 }
+
+// check context.Context interface
+var _ context.Context = &Context{}
 
 func NewContext() *Context {
 	return &Context{}
@@ -21,6 +27,23 @@ func (c *Context) ContentType() string {
 	return c.Request.Header.Get("Content-Type")
 }
 
+// Set key value pair
+func (c *Context) Set(key string, value interface{}) {
+	if c.metadata == nil {
+		c.metadata = make(map[string]interface{})
+	}
+	c.metadata[key] = value
+}
+
+// Get value by key
+func (c *Context) Get(key string) (value interface{}, exists bool) {
+	if c.metadata != nil {
+		value, exists = c.metadata[key]
+	}
+	return
+}
+
+// render
 func (c *Context) String(statusCode int, format string, contents ...interface{}) {
 	c.Render(statusCode, &render.TextData{Format: format, Contents: contents})
 }
@@ -62,4 +85,28 @@ func (c *Context) Bind(obj interface{}) error {
 
 func (c *Context) BindWith(obj interface{}, b binding.Binder) error {
 	return binding.BindWith(c.Request, obj, b)
+}
+
+/************************************/
+/*implement golang.org/x/net/context*/
+/************************************/
+
+func (c *Context) Deadline() (deadline time.Time, ok bool) {
+	return
+}
+
+func (c *Context) Done() <-chan struct{} {
+	return nil
+}
+
+func (c *Context) Err() error {
+	return nil
+}
+
+func (c *Context) Value(key interface{}) interface{} {
+	if keyAsString, ok := key.(string); ok {
+		val, _ := c.Get(keyAsString)
+		return val
+	}
+	return nil
 }
