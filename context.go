@@ -93,6 +93,10 @@ func (c *Context) BindWith(obj interface{}, b binding.Binder) error {
 	return binding.BindWith(c.Request, obj, b)
 }
 
+func (c *Context) BindJSON(obj interface{}) error {
+	return c.BindWith(obj, binding.JsonBinding)
+}
+
 /************************************/
 /*implement golang.org/x/net/context*/
 /************************************/

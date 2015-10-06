@@ -31,21 +31,21 @@ type StructValidator interface {
 var Validator StructValidator = &defaultValidator{}
 
 var (
-	jsonBinding          = jsonBinder{}
-	formBinding          = formBinder{}
-	formPostBinding      = formPostBinder{}
-	formMultipartBinding = formMultipartBinder{}
+	JsonBinding          = jsonBinder{}
+	FormBinding          = formBinder{}
+	FormPostBinding      = formPostBinder{}
+	FormMultipartBinding = formMultipartBinder{}
 )
 
 func Default(method, contentType string) Binder {
 	if method == "GET" {
-		return formBinding
+		return FormBinding
 	} else {
 		switch contentType {
 		case MIMEJSON:
-			return jsonBinding
+			return JsonBinding
 		default: //case MIMEPOSTForm, MIMEMultipartPOSTForm:
-			return formBinding
+			return FormBinding
 		}
 	}
 }
