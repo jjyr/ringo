@@ -20,8 +20,10 @@ func newControllerManage(router *Router) *ControllerManage {
 }
 
 type ControllerOption struct {
+	// controller path prefix
 	Prefix string
-	Name   string
+	// override controller name
+	Name string
 }
 
 type controllerRegistry struct {
@@ -29,6 +31,7 @@ type controllerRegistry struct {
 	controllerOption *ControllerOption
 }
 
+// AddController add newcontroller
 func (m *ControllerManage) AddController(c Controllerable, controllerOption *ControllerOption) {
 	m.registerController(c, controllerOption)
 	// register to router

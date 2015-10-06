@@ -28,7 +28,7 @@ func (c *Controller) SetControllerName(name string) {
 	c.Name = name
 }
 
-// AddRoute add customize route to controller
+// AddRoutes add customize route to controller
 func (c *Controller) AddRoutes(routeOptions ...ControllerRouteOption) {
 	for _, routeOption := range routeOptions {
 		// check option
@@ -82,15 +82,25 @@ func GetControllerName(c Controllerable) string {
 	return name
 }
 
+// ControllerRouteOption options to customize controller route
 type ControllerRouteOption struct {
-	Handler    string
-	Method     string
-	Methods    []string
-	Path       string
-	Prefix     string
-	Name       string
-	Suffix     string
-	Member     bool
+	// handler method name
+	Handler string
+	// http method
+	Method string
+	// http methods
+	Methods []string
+	// route path
+	Path string
+	// route prefix
+	Prefix string
+	// override controller name
+	Name string
+	// route suffix
+	Suffix string
+	// as member route, like: "/users/1/xxx"
+	Member bool
+	// as collection route, like: "/users/xxx"
 	Collection bool
 }
 
