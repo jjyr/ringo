@@ -1,7 +1,6 @@
 package ringo
 
 import (
-	"errors"
 	"log"
 	"net/http"
 )
@@ -73,7 +72,7 @@ func (app *App) defaultHandleHTTPRequest(c *Context) {
 	handler(c)
 
 	if !c.Rendered() {
-		panic(errors.New("Empty response, missing render call in handler"))
+		log.Printf("Empty render")
 	}
 }
 
