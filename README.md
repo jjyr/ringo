@@ -6,6 +6,11 @@ Yet another MVC web framework for Go, inspired from rails, gin.
 
 `go get github.com/jjyr/ringo`
 
+## TODO
+- [ ] Rails-like generator.
+- [ ] Templates support.
+- [ ] Ringo model?
+
 ## Usage
 
 ### hello world
