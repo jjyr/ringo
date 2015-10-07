@@ -8,7 +8,7 @@ Yet another MVC web framework for Go, inspired from rails, gin.
 
 ## TODO
 - [ ] Rails-like generator.
-- [ ] Templates support.
+- [ ] Config file support.
 - [ ] Ringo model?
 
 ## Usage
@@ -38,6 +38,7 @@ import (
 	"fmt"
 
 	"github.com/jjyr/ringo"
+	"github.com/jjyr/ringo/middleware"
 )
 
 // user model
@@ -94,7 +95,7 @@ func (ctl *UserController) Create(c *ringo.Context) {
 	}
 }
 
-// customized action
+// customized actions
 func (ctl *UserController) Greet(c *ringo.Context) {
 	name := c.Params.ByName("id")
 	var u *user = nil
@@ -111,21 +112,46 @@ func (ctl *UserController) Greet(c *ringo.Context) {
 	}
 }
 
+func (ctl *UserController) DisplayList(c *ringo.Context) {
+	// render html template
+	c.HTML(200, "list.html", ctl.users)
+}
+
 var userController *UserController
 
 // init userController
 func init() {
 	userController = &UserController{}
 	// register customized route
-	// Post -> [POST]/user/:id/greeting
-	userController.AddRoutes(ringo.ControllerRouteOption{Handler: "Greet", Member: true, Method: "POST", Path: "greeting"})
+	userController.AddRoutes([]ringo.ControllerRouteOption{
+		// Greet -> [POST]/user/:id/greeting
+		{Handler: "Greet", Member: true, Method: "POST", Path: "greeting"},
+		// DisplayList -> [GET]/users/list
+		{Handler: "DisplayList", Collection: true, Method: "GET", Name: "users", Path: "list"},
+	}...)
 }
 
 func main() {
 	app := ringo.NewApp()
+
+	// register controllers
 	app.AddController(userController, nil)
+	// use recover middleware, response 500 if handler panic
+	app.Use(middleware.Recover())
+	// setup templates path
+	app.SetTemplatePath("templates")
 	app.Run("localhost:8000")
 }
+```
+
+### template
+```html
+<!-- template/list.html -->
+<ol>
+  {{range .}}
+  <li> {{.Name}} </li>
+  {{end}}
+</ol>
 ```
 
 
