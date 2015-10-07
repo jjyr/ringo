@@ -10,11 +10,16 @@ type App struct {
 	middlewares       []MiddlewareFunc
 	handleHTTPRequest HandlerFunc
 	*ControllerManage
+	*TemplateManage
 }
 
 func NewApp() *App {
+	app := App{}
 	defaultRouter := NewRouter()
-	return &App{Router: defaultRouter, ControllerManage: newControllerManage(defaultRouter)}
+	app.Router = defaultRouter
+	app.ControllerManage = newControllerManage(defaultRouter)
+	app.TemplateManage = newTemplateManage()
+	return &app
 }
 
 func (app *App) Use(middlewreFunc MiddlewareFunc) {
@@ -36,6 +41,7 @@ func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c := NewContext()
 	c.Request = r
 	c.ResponseWriter = newResponseWriter(w)
+	c.app = app
 	app.handleHTTPRequest(c)
 }
 
