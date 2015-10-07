@@ -32,6 +32,7 @@ func main() {
 
 ### controller
 ``` go
+// users_sample.go
 package main
 
 import (
@@ -64,7 +65,7 @@ type UserController struct {
 }
 
 func (ctl *UserController) List(c *ringo.Context) {
-	c.JSON(200, ctl.users)
+	c.JSON(200, ringo.H{"users": ctl.users})
 }
 
 func (ctl *UserController) Delete(c *ringo.Context) {
@@ -79,9 +80,9 @@ func (ctl *UserController) Delete(c *ringo.Context) {
 	}
 	if idx >= 0 {
 		ctl.users = append(ctl.users[:idx], ctl.users[idx+1:]...)
-		c.String(200, "ok")
+		c.JSON(200, ringo.H{"message": "ok"})
 	} else {
-		c.String(404, "not found")
+		c.JSON(404, ringo.H{"message": "not found"})
 	}
 }
 
@@ -91,7 +92,7 @@ func (ctl *UserController) Create(c *ringo.Context) {
 		ctl.users = append(ctl.users, u)
 		c.JSON(200, u)
 	} else {
-		c.String(400, "format error")
+		c.JSON(400, ringo.H{"message": "format error"})
 	}
 }
 
@@ -106,9 +107,9 @@ func (ctl *UserController) Greet(c *ringo.Context) {
 		}
 	}
 	if u == nil {
-		c.String(404, "not found")
+		c.JSON(400, ringo.H{"message": "not found"})
 	} else {
-		c.String(200, fmt.Sprintf("Hello, I'm %s", u.Name))
+		c.JSON(200, ringo.H{"message": fmt.Sprintf("Hello, I'm %s", u.Name)})
 	}
 }
 
