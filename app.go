@@ -41,6 +41,7 @@ func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c := NewContext()
 	c.Request = r
 	c.ResponseWriter = newResponseWriter(w)
+	c.app = app
 	app.handleHTTPRequest(c)
 }
 
