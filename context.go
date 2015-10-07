@@ -9,6 +9,7 @@ import (
 	"golang.org/x/net/context"
 )
 
+// Context Application context during requests
 type Context struct {
 	Request *http.Request
 	http.ResponseWriter
@@ -54,6 +55,7 @@ func (c *Context) String(statusCode int, format string, contents ...interface{})
 	c.Render(statusCode, &render.TextData{Format: format, Contents: contents})
 }
 
+// Render render Renderable object to client
 func (c *Context) Render(statusCode int, r render.Renderable) {
 	c.WriteHeader(statusCode)
 	if err := r.Render(c.ResponseWriter); err != nil {
@@ -83,12 +85,17 @@ func (c *Context) File(file string) {
 	http.ServeFile(c.ResponseWriter, c.Request, file)
 }
 
-// Bind
+func (c *Context) HTML(statusCode int, name string, data interface{}) {
+	c.Render(statusCode, &render.HTMLTemplateData{Data: data, Template: c.app.TemplateManage.FindTemplate(name)})
+}
+
+// Bind bind object to request
 func (c *Context) Bind(obj interface{}) error {
 	b := binding.Default(c.Request.Method, c.ContentType())
 	return c.BindWith(obj, b)
 }
 
+// BindWith bind Binder object to requests
 func (c *Context) BindWith(obj interface{}, b binding.Binder) error {
 	return binding.BindWith(c.Request, obj, b)
 }
