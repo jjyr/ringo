@@ -1,6 +1,6 @@
 # Ringo [![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](http://godoc.org/github.com/jjyr/ringo) [![Build Status](https://travis-ci.org/jjyr/ringo.svg?branch=master)](https://travis-ci.org/jjyr/ringo)
 
-Yet another MVC web framework for Go, inspired from rails, gin.
+Lightweight & high customized MVC web framework for Go.
 
 ## Install
 
@@ -128,7 +128,7 @@ func init() {
 		// Greet -> [POST]/user/:id/greeting
 		{Handler: "Greet", Member: true, Method: "POST", Path: "greeting"},
 		// DisplayList -> [GET]/users/list
-		{Handler: "DisplayList", Collection: true, Method: "GET", Name: "users", Path: "list"},
+		{Handler: "DisplayList", Collection: true, Method: "GET", Suffix: "s", Path: "list"},
 	}...)
 }
 
