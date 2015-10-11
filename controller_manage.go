@@ -35,7 +35,7 @@ type controllerRegistry struct {
 func (m *ControllerManage) AddController(c Controllerable, controllerOption *ControllerOption) {
 	m.registerController(c, controllerOption)
 	// register to router
-	controllerName := GetControllerName(c)
+	controllerName := getControllerName(c, controllerOption)
 	if controllerName == "" {
 		panic(fmt.Errorf("Controller Name is empty, %+v", c))
 	}
@@ -55,18 +55,11 @@ func (m *ControllerManage) AddController(c Controllerable, controllerOption *Con
 
 // generate controller route path from options
 func controllerRoutePathFromOption(c Controllerable, controllerOption *ControllerOption, routeOption ControllerRouteOption) string {
-	var controllerName, controllerPrefix string
-	controllerName = routeOption.Name
+	var controllerPrefix string
 	if controllerOption != nil {
 		controllerPrefix = controllerOption.Prefix
-		if controllerName == "" {
-			controllerName = controllerOption.Name
-		}
 	}
-
-	if controllerName == "" {
-		controllerName = GetControllerName(c)
-	}
+	controllerName := getControllerName(c, controllerOption)
 	controllerName = routeOption.Prefix + controllerName + routeOption.Suffix
 	routePath := path.Join("/", controllerName)
 	if routeOption.Member {
@@ -78,7 +71,7 @@ func controllerRoutePathFromOption(c Controllerable, controllerOption *Controlle
 }
 
 func (m *ControllerManage) registerController(c Controllerable, controllerOption *ControllerOption) {
-	name := GetControllerName(c)
+	name := getControllerName(c, controllerOption)
 	if _, exists := m.controllers[name]; exists {
 		panic(fmt.Errorf("Controller name '%s' duplicate", name))
 	}

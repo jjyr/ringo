@@ -70,7 +70,7 @@ func TestController(t *testing.T) {
 	}
 
 	for _, cn := range conrollerNamesMap {
-		if n := GetControllerName(cn.c); n != cn.name {
+		if n := getControllerName(cn.c, nil); n != cn.name {
 			t.Errorf("Controller name detect error, the name '%s' should be '%s'", n, cn.name)
 		}
 	}
@@ -88,16 +88,18 @@ func TestController(t *testing.T) {
 		{"PATCH", "/users/1", "Update", "1"},
 		{"DELETE", "/users/2", "Delete", "2"},
 		{"POST", "/users/2/custome", "MemberCustome", "2"},
-		{"POST", "/user/custome", "CollectionCustome", ""},
+		{"POST", "/user/2/custome", "MemberCustome", "2"},
+		{"POST", "/users-customize/custome", "CollectionCustome", ""},
 	}
 
 	r := NewApp()
 	users := &usersController{}
 	users.AddRoutes(
 		ControllerRouteOption{Member: true, Path: "custome", Method: "POST", Handler: "MemberCustome"},
-		ControllerRouteOption{Collection: true, Path: "custome", Name: "user", Method: "POST", Handler: "CollectionCustome"},
+		ControllerRouteOption{Collection: true, Path: "custome", Suffix: "-customize", Method: "POST", Handler: "CollectionCustome"},
 	)
 	r.AddController(users, nil)
+	r.AddController(users, &ControllerOption{Name: "user"})
 	context := NewContext()
 	for i, c := range cases {
 		id = "nil"
@@ -125,7 +127,8 @@ func TestController(t *testing.T) {
 		{"users", "Update", "/users/lastman", []string{"id", "lastman"}},
 		{"users", "Delete", "/users/2", []string{"id", "2"}},
 		{"users", "MemberCustome", "/users/2/custome", []string{"id", "2"}},
-		{"users", "CollectionCustome", "/user/custome", nil},
+		{"users", "CollectionCustome", "/users-customize/custome", nil},
+		{"user", "CollectionCustome", "/user-customize/custome", nil},
 	}
 
 	for i, c := range pathCases {
@@ -150,8 +153,7 @@ func TestController(t *testing.T) {
 	func() {
 		defer func() { recover() }()
 		users := &anotherUsersController{}
-		users.Name = "users"
-		r.AddController(users, nil)
+		r.AddController(users, &ControllerOption{Name: "users"})
 		t.Errorf("Add same name controller should panic")
 	}()
 }

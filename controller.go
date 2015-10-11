@@ -6,26 +6,26 @@ import (
 )
 
 type Controllerable interface {
-	ControllerName() string
-	SetControllerName(string)
+	controllerName() string
+	setControllerName(string)
 	AddRoutes(...ControllerRouteOption)
 	GetRoutes() []ControllerRouteOption
 }
 
 type Controller struct {
-	Name   string
+	name   string
 	routes []ControllerRouteOption
 }
 
-func (c *Controller) ControllerName() string {
-	return c.Name
+func (c *Controller) controllerName() string {
+	return c.name
 }
 
-func (c *Controller) SetControllerName(name string) {
-	if c.ControllerName() != "" {
+func (c *Controller) setControllerName(name string) {
+	if c.controllerName() != "" {
 		panic(fmt.Errorf("Should not override non empty controller name"))
 	}
-	c.Name = name
+	c.name = name
 }
 
 // AddRoutes add customize route to controller
@@ -46,8 +46,14 @@ func isAlphabetUpper(s string) bool {
 }
 
 // GetControllerName return controller name, generate by type name if not manually set
-func GetControllerName(c Controllerable) string {
-	name := c.ControllerName()
+func getControllerName(c Controllerable, option *ControllerOption) (name string) {
+	if option != nil {
+		name = option.Name
+	}
+
+	if name == "" {
+		name = c.controllerName()
+	}
 
 	if name == "" {
 		controllerType := fmt.Sprintf("%T", c)
@@ -76,7 +82,7 @@ func GetControllerName(c Controllerable) string {
 			}
 		}
 
-		c.SetControllerName(name)
+		c.setControllerName(name)
 	}
 
 	return name
@@ -92,11 +98,9 @@ type ControllerRouteOption struct {
 	Methods []string
 	// route path
 	Path string
-	// route prefix
+	// name prefix in path
 	Prefix string
-	// override controller name
-	Name string
-	// route suffix
+	// name suffix in path
 	Suffix string
 	// as member route, like: "/users/1/xxx"
 	Member bool
