@@ -128,7 +128,7 @@ func init() {
 		// Greet -> [POST]/user/:id/greeting
 		{Handler: "Greet", Member: true, Method: "POST", Path: "greeting"},
 		// DisplayList -> [GET]/users/list
-		{Handler: "DisplayList", Collection: true, Method: "GET", Suffix: "s", Path: "list"},
+		{Handler: "DisplayList", Method: "GET", Suffix: "s", Path: "list"},
 	}...)
 }
 

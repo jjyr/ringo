@@ -98,22 +98,16 @@ type ControllerRouteOption struct {
 	Methods []string
 	// route path
 	Path string
-	// name prefix in path
+	// name prefix: "/<prefix>xxx/path"
 	Prefix string
-	// name suffix in path
+	// name suffix: "/xxx<suffix>/path"
 	Suffix string
-	// as member route, like: "/users/1/xxx"
+	// as member route: "/<name>/<id>/xxx"
 	Member bool
-	// as collection route, like: "/users/xxx"
-	Collection bool
 }
 
 // validate value
 func (routerOption *ControllerRouteOption) confirm() {
-	if routerOption.Member == routerOption.Collection {
-		panic(fmt.Errorf("Router option must be member or collection"))
-	}
-
 	if routerOption.Method != "" {
 		routerOption.Methods = append(routerOption.Methods, routerOption.Method)
 	}
@@ -127,12 +121,12 @@ var controllerDefaultRouteOptions []ControllerRouteOption
 
 func init() {
 	controllerDefaultRouteOptions = []ControllerRouteOption{
-		{Handler: "List", Method: "GET", Collection: true},
-		{Handler: "Create", Method: "POST", Collection: true},
+		{Handler: "List", Method: "GET"},
+		{Handler: "Create", Method: "POST"},
 		{Handler: "Get", Method: "GET", Member: true},
 		{Handler: "Delete", Method: "DELETE", Member: true},
 		{Handler: "Update", Methods: []string{"PUT", "PATCH"}, Member: true},
-		{Handler: "New", Method: "GET", Collection: true, Prefix: "new-"},
+		{Handler: "New", Method: "GET", Prefix: "new-"},
 		{Handler: "Edit", Method: "GET", Member: true, Path: "/edit"},
 	}
 

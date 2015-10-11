@@ -96,7 +96,7 @@ func TestController(t *testing.T) {
 	users := &usersController{}
 	users.AddRoutes(
 		ControllerRouteOption{Member: true, Path: "custome", Method: "POST", Handler: "MemberCustome"},
-		ControllerRouteOption{Collection: true, Path: "custome", Suffix: "-customize", Method: "POST", Handler: "CollectionCustome"},
+		ControllerRouteOption{Path: "custome", Suffix: "-customize", Method: "POST", Handler: "CollectionCustome"},
 	)
 	r.AddController(users, nil)
 	r.AddController(users, &ControllerOption{Name: "user"})
@@ -142,12 +142,6 @@ func TestController(t *testing.T) {
 		defer func() { recover() }()
 		r.FindControllerRoutePath("void", "nothing")
 		t.Errorf("Find no exists route path should panic")
-	}()
-
-	func() {
-		defer func() { recover() }()
-		users.AddRoutes(ControllerRouteOption{Member: true, Collection: true, Path: "crash", Handler: "MemberCustome"})
-		t.Errorf("RouteOption invalid should panic")
 	}()
 
 	func() {
