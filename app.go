@@ -1,7 +1,7 @@
 package ringo
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"github.com/jjyr/ringo/route"
 	"github.com/jjyr/ringo/common"
@@ -27,11 +27,11 @@ func (app *App) Use(middlewreFunc common.MiddlewareFunc) {
 }
 
 func (app *App) Run(addr string) error {
-	log.Printf("Listening on %s, start serve HTTP", addr)
+	log.Infof("Listening on %s, start serve HTTP", addr)
 	app.initForServe()
 	err := http.ListenAndServe(addr, app)
 	if err != nil {
-		log.Printf("%s", err)
+		log.Errorln(err)
 	}
 	return err
 }

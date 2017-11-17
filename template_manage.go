@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"io/ioutil"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"path"
 )
 

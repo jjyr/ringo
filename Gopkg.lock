@@ -8,6 +8,24 @@
   version = "v1.1"
 
 [[projects]]
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  revision = "f006c2ac4710855cf0f916dd6b77acf6b048dc6e"
+  version = "v1.0.3"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["ssh/terminal"]
+  revision = "9f005a07e0d31d45e6656d241bb5c0f2efd4bc94"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = ["unix","windows"]
+  revision = "0dd5e194bbf5eb84a39666eb4c98a4d007e4203a"
+
+[[projects]]
   name = "gopkg.in/go-playground/validator.v8"
   packages = ["."]
   revision = "7bfad4079388e3aac08d67b91bf381c99605f4d9"
@@ -16,6 +34,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "52a565756a6130dd586ca7b7597be941f98330852206ab0f6dd20ada63e7a900"
+  inputs-digest = "db25e7568067a3b72cdc2dc2bc40622f6f6851f29c438b7ac2b4af78ce89e599"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -1,7 +1,7 @@
 package route
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"path"
 
@@ -49,7 +49,7 @@ type Router struct {
 }
 
 func (r *Router) AddRoute(path string, method string, handler common.HandlerFunc) {
-	log.Printf("Add handler '%s' -> [%s]%s", handler, method, path)
+	log.Infof("add route -> [%s]%s", method, path)
 	r.Router.Handle(method, path, func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		c := w.(common.Context)
 		c.SetParams(common.Params(params))
