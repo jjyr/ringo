@@ -1,4 +1,4 @@
-package ringo
+package context
 
 import (
 	"bufio"
@@ -18,7 +18,7 @@ var _ http.Hijacker = &ResponseWriter{}
 var _ http.CloseNotifier = &ResponseWriter{}
 var _ http.Flusher = &ResponseWriter{}
 
-func newResponseWriter(w http.ResponseWriter) *ResponseWriter {
+func NewResponseWriter(w http.ResponseWriter) *ResponseWriter {
 	return &ResponseWriter{ResponseWriter: w}
 }
 

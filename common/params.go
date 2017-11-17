@@ -1,4 +1,4 @@
-package ringo
+package common
 
 import "github.com/julienschmidt/httprouter"
 

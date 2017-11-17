@@ -1,4 +1,4 @@
-package ringo
+package context
 
 import (
 	"net/http"
@@ -20,7 +20,7 @@ func (w *FakeResponseWriter) WriteHeader(statusCode int) {
 
 func TestResponseWriter(t *testing.T) {
 	fw := FakeResponseWriter{}
-	w := newResponseWriter(&fw)
+	w := NewResponseWriter(&fw)
 	if w.Written() {
 		t.Errorf("Should not written")
 	}
@@ -29,7 +29,7 @@ func TestResponseWriter(t *testing.T) {
 		t.Errorf("Should written")
 	}
 
-	w = newResponseWriter(&fw)
+	w = NewResponseWriter(&fw)
 	w.WriteHeader(404)
 	if w.Written() {
 		t.Errorf("Should not written")

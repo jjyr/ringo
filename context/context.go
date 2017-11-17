@@ -1,37 +1,50 @@
-package ringo
+package context
 
 import (
 	"net/http"
-	"time"
-
 	"github.com/jjyr/ringo/binding"
 	"github.com/jjyr/ringo/render"
-	"golang.org/x/net/context"
+	"github.com/jjyr/ringo/common"
 )
 
 // Context Application context during requests
 type Context struct {
-	Request *http.Request
+	request        *http.Request
 	http.ResponseWriter
-	Params   Params
-	metadata map[string]interface{}
-	app      *App
+	params         common.Params
+	metadata       map[string]interface{}
+	TemplateManage TemplateManage
+}
+
+type TemplateManage interface {
+	FindTemplate(string) *render.Template
 }
 
 // check context.Context interface
-var _ context.Context = &Context{}
+var _ common.Context = &Context{}
 
 func NewContext() *Context {
 	return &Context{}
 }
 
 func (c *Context) ContentType() string {
-	return c.Request.Header.Get("Content-Type")
+	return c.request.Header.Get("Content-Type")
 }
 
-// FindControllerRoutePath Find controller action path, return first path if multi route registered, panic if not found
-func (c *Context) FindControllerRoutePath(name string, handler string) string {
-	return c.app.FindControllerRoutePath(name, handler)
+func (c *Context) Request() (*http.Request) {
+	return c.request
+}
+
+func (c *Context) SetRequest(request *http.Request) {
+	c.request = request
+}
+
+func (c *Context) Params()(*common.Params) {
+	return &c.params
+}
+
+func (c *Context) SetParams(params common.Params) {
+	c.params = params
 }
 
 // Set key value pair
@@ -64,7 +77,7 @@ func (c *Context) Render(statusCode int, r render.Renderable) {
 	c.ResponseWriter.(*ResponseWriter).Flush()
 }
 
-func (c *Context) Rendered() bool {
+func (c *Context) HasRendered() bool {
 	return c.ResponseWriter.(*ResponseWriter).Written()
 }
 
@@ -73,7 +86,7 @@ func (c *Context) Redirect(code int, location string) {
 	c.Render(code, &render.Redirect{
 		Code:     code,
 		Location: location,
-		Request:  c.Request,
+		Request:  c.request,
 	})
 }
 
@@ -82,48 +95,24 @@ func (c *Context) JSON(statusCode int, content interface{}) {
 }
 
 func (c *Context) File(file string) {
-	http.ServeFile(c.ResponseWriter, c.Request, file)
+	http.ServeFile(c.ResponseWriter, c.request, file)
 }
 
 func (c *Context) HTML(statusCode int, name string, data interface{}) {
-	c.Render(statusCode, &render.HTMLTemplateData{Data: data, Template: c.app.TemplateManage.FindTemplate(name)})
+	c.Render(statusCode, &render.HTMLTemplateData{Data: data, Template: c.TemplateManage.FindTemplate(name)})
 }
 
 // Bind bind object to request
 func (c *Context) Bind(obj interface{}) error {
-	b := binding.Default(c.Request.Method, c.ContentType())
+	b := binding.Default(c.request.Method, c.ContentType())
 	return c.BindWith(obj, b)
 }
 
 // BindWith bind Binder object to requests
 func (c *Context) BindWith(obj interface{}, b binding.Binder) error {
-	return binding.BindWith(c.Request, obj, b)
+	return binding.BindWith(c.request, obj, b)
 }
 
 func (c *Context) BindJSON(obj interface{}) error {
 	return c.BindWith(obj, binding.JsonBinding)
-}
-
-/************************************/
-/*implement golang.org/x/net/context*/
-/************************************/
-
-func (c *Context) Deadline() (deadline time.Time, ok bool) {
-	return
-}
-
-func (c *Context) Done() <-chan struct{} {
-	return nil
-}
-
-func (c *Context) Err() error {
-	return nil
-}
-
-func (c *Context) Value(key interface{}) interface{} {
-	if keyAsString, ok := key.(string); ok {
-		val, _ := c.Get(keyAsString)
-		return val
-	}
-	return nil
 }

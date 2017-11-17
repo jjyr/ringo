@@ -1,28 +1,32 @@
-package ringo
+package route
 
-import "testing"
+import (
+	"testing"
+	"github.com/jjyr/ringo/common"
+	"github.com/jjyr/ringo/context"
+)
 
 func TestRouter(t *testing.T) {
 	r := NewRouter()
 
 	var handlerName string
 
-	h1 := func(c *Context) {
+	h1 := func(c common.Context) {
 		handlerName = "h1"
 	}
-	h2 := func(c *Context) {
+	h2 := func(c common.Context) {
 		handlerName = "h2"
 	}
-	h3 := func(c *Context) {
+	h3 := func(c common.Context) {
 		handlerName = "h3"
 	}
-	h4 := func(c *Context) {
+	h4 := func(c common.Context) {
 		handlerName = "h4"
 	}
 
 	var h1Name, h2Name string
 
-	equalHandler := func(h1 HandlerFunc, h2 HandlerFunc) bool {
+	equalHandler := func(h1 common.HandlerFunc, h2 common.HandlerFunc) bool {
 		h1Name = "nil"
 		h2Name = "nil"
 		if h1 == nil && h2 == nil {
@@ -31,7 +35,7 @@ func TestRouter(t *testing.T) {
 			return false
 		}
 
-		c := NewContext()
+		c := context.NewContext()
 
 		handlerName = ""
 		h1(c)
@@ -43,7 +47,7 @@ func TestRouter(t *testing.T) {
 		return h1Name == h2Name
 	}
 
-	paramEqual := func(p1 Params, p2 Params) bool {
+	paramEqual := func(p1 common.Params, p2 common.Params) bool {
 		for i, p := range p1 {
 			if p2[i] != p {
 				return false
@@ -72,25 +76,25 @@ func TestRouter(t *testing.T) {
 
 	cases := []struct {
 		method, path string
-		handler      HandlerFunc
-		params       Params
+		handler      common.HandlerFunc
+		params       common.Params
 	}{
-		{"GET", "/tests", h1, Params{}},
+		{"GET", "/tests", h1, common.Params{}},
 		{"GET", "tests", nil, nil},
 		{"GET", "tests/", nil, nil},
-		{"POST", "/tests", h2, Params{}},
-		{"HEAD", "/tests", h3, Params{}},
-		{"DELETE", "/tests", h2, Params{}},
+		{"POST", "/tests", h2, common.Params{}},
+		{"HEAD", "/tests", h3, common.Params{}},
+		{"DELETE", "/tests", h2, common.Params{}},
 		{"PATCH", "/change", nil, nil},
 		{"PATCH", "/change/", nil, nil},
-		{"PATCH", "/change/world", h2, Params{{"thing", "world"}}},
-		{"PUT", "/get/secret/info", h2, Params{{"thing", "secret"}}},
-		{"OPTIONS", "/try/2/params/3", h1, Params{{"two", "2"}, {"togather", "3"}}},
-		{"OPTIONS", "/same/test/params/test2", h1, Params{{"name", "test"}, {"name", "test2"}}},
+		{"PATCH", "/change/world", h2, common.Params{{"thing", "world"}}},
+		{"PUT", "/get/secret/info", h2, common.Params{{"thing", "secret"}}},
+		{"OPTIONS", "/try/2/params/3", h1, common.Params{{"two", "2"}, {"togather", "3"}}},
+		{"OPTIONS", "/same/test/params/test2", h1, common.Params{{"name", "test"}, {"name", "test2"}}},
 		{"HEAD", "/try/2/params/3", nil, nil},
-		{"GET", "/mount/hello", h3, Params{}},
-		{"POST", "/mount/echo/nihao", h4, Params{{"word", "nihao"}}},
-		{"GET", "/root", h2, Params{}},
+		{"GET", "/mount/hello", h3, common.Params{}},
+		{"POST", "/mount/echo/nihao", h4, common.Params{{"word", "nihao"}}},
+		{"GET", "/root", h2, common.Params{}},
 	}
 
 	for i, c := range cases {

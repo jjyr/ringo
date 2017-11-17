@@ -1,4 +1,4 @@
-package ringo
+package route
 
 import (
 	"log"
@@ -6,27 +6,28 @@ import (
 	"path"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/jjyr/ringo/common"
 )
 
-func (r *Router) GET(path string, handler HandlerFunc) {
+func (r *Router) GET(path string, handler common.HandlerFunc) {
 	r.AddRoute(path, "GET", handler)
 }
-func (r *Router) POST(path string, handler HandlerFunc) {
+func (r *Router) POST(path string, handler common.HandlerFunc) {
 	r.AddRoute(path, "POST", handler)
 }
-func (r *Router) PUT(path string, handler HandlerFunc) {
+func (r *Router) PUT(path string, handler common.HandlerFunc) {
 	r.AddRoute(path, "PUT", handler)
 }
-func (r *Router) DELETE(path string, handler HandlerFunc) {
+func (r *Router) DELETE(path string, handler common.HandlerFunc) {
 	r.AddRoute(path, "DELETE", handler)
 }
-func (r *Router) HEAD(path string, handler HandlerFunc) {
+func (r *Router) HEAD(path string, handler common.HandlerFunc) {
 	r.AddRoute(path, "HEAD", handler)
 }
-func (r *Router) OPTIONS(path string, handler HandlerFunc) {
+func (r *Router) OPTIONS(path string, handler common.HandlerFunc) {
 	r.AddRoute(path, "OPTIONS", handler)
 }
-func (r *Router) PATCH(path string, handler HandlerFunc) {
+func (r *Router) PATCH(path string, handler common.HandlerFunc) {
 	r.AddRoute(path, "PATCH", handler)
 }
 
@@ -39,22 +40,19 @@ func (router *Router) Mount(mountPath string, mountedRouter *Router) {
 type routeHandler struct {
 	method  string
 	path    string
-	handler HandlerFunc
+	handler common.HandlerFunc
 }
-
-type routeRegisterMap map[string]bool
 
 type Router struct {
 	routes []routeHandler
 	httprouter.Router
 }
 
-func (r *Router) AddRoute(path string, method string, handler HandlerFunc) {
+func (r *Router) AddRoute(path string, method string, handler common.HandlerFunc) {
 	log.Printf("Add handler '%s' -> [%s]%s", handler, method, path)
 	r.Router.Handle(method, path, func(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-		c := w.(*Context)
-		c.Request = r
-		c.Params = Params(params)
+		c := w.(common.Context)
+		c.SetParams(common.Params(params))
 		handler(c)
 	})
 
@@ -62,13 +60,13 @@ func (r *Router) AddRoute(path string, method string, handler HandlerFunc) {
 	r.routes = append(r.routes, route)
 }
 
-func (r *Router) MatchRoute(path string, method string) (handler HandlerFunc, params Params, redirect bool) {
+func (r *Router) MatchRoute(path string, method string) (handler common.HandlerFunc, params common.Params, redirect bool) {
 	rawHandler, rawParams, redirect := r.Lookup(method, path)
-	params = Params(rawParams)
+	params = common.Params(rawParams)
 
 	if rawHandler != nil {
-		handler = func(c *Context) {
-			rawHandler(c, c.Request, rawParams)
+		handler = func(c common.Context) {
+			rawHandler(c, nil, rawParams)
 		}
 	}
 

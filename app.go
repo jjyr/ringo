@@ -3,26 +3,26 @@ package ringo
 import (
 	"log"
 	"net/http"
+	"github.com/jjyr/ringo/route"
+	"github.com/jjyr/ringo/common"
+	"github.com/jjyr/ringo/context"
 )
 
 type App struct {
-	*Router
-	middlewares       []MiddlewareFunc
-	handleHTTPRequest HandlerFunc
-	*ControllerManage
+	middlewares       []common.MiddlewareFunc
+	handleHTTPRequest common.HandlerFunc
+	*route.RouteManage
 	*TemplateManage
 }
 
 func NewApp() *App {
 	app := App{}
-	defaultRouter := NewRouter()
-	app.Router = defaultRouter
-	app.ControllerManage = newControllerManage(defaultRouter)
+	app.RouteManage = route.NewRouteManage()
 	app.TemplateManage = newTemplateManage()
 	return &app
 }
 
-func (app *App) Use(middlewreFunc MiddlewareFunc) {
+func (app *App) Use(middlewreFunc common.MiddlewareFunc) {
 	app.middlewares = append(app.middlewares, middlewreFunc)
 }
 
@@ -38,10 +38,10 @@ func (app *App) Run(addr string) error {
 
 func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%+v", r)
-	c := NewContext()
-	c.Request = r
-	c.ResponseWriter = newResponseWriter(w)
-	c.app = app
+	c := context.NewContext()
+	c.SetRequest(r)
+	c.ResponseWriter = context.NewResponseWriter(w)
+	c.TemplateManage = app.TemplateManage
 	app.handleHTTPRequest(c)
 }
 
@@ -50,7 +50,7 @@ func (app *App) initForServe() {
 	app.handleHTTPRequest = app.applyMiddlewares(app.defaultHandleHTTPRequest)
 }
 
-func (app *App) applyMiddlewares(handler HandlerFunc) HandlerFunc {
+func (app *App) applyMiddlewares(handler common.HandlerFunc) common.HandlerFunc {
 	for _, middleware := range app.middlewares {
 		handler = middleware(handler)
 	}
@@ -58,31 +58,31 @@ func (app *App) applyMiddlewares(handler HandlerFunc) HandlerFunc {
 	return handler
 }
 
-func (app *App) defaultHandleHTTPRequest(c *Context) {
-	requestPath := c.Request.URL.Path
-	handler, params, redirect := app.Router.MatchRoute(requestPath, c.Request.Method)
-	c.Params = params
+func (app *App) defaultHandleHTTPRequest(c common.Context) {
+	requestPath := c.Request().URL.Path
+	handler, params, redirect := app.RouteManage.MatchRoute(requestPath, c.Request().Method)
+	c.SetParams(params)
 
 	if redirect {
 		// handle redirect without trailing slash
-		handler = func(c *Context) {
+		handler = func(c common.Context) {
 			c.Redirect(301, requestPath[:len(requestPath)-1])
 		}
 	}
 
 	if handler == nil {
 		handler = handleNotFound
-		log.Printf("Not found route for %s", c.Request.RequestURI)
+		log.Printf("Not found route for %s", c.Request().RequestURI)
 	}
 
 	handler(c)
 
-	if !c.Rendered() {
+	if !c.HasRendered() {
 		log.Printf("Empty render")
 	}
 }
 
-func handleNotFound(c *Context) {
+func handleNotFound(c common.Context) {
 	statusCode := http.StatusNotFound
 	text := http.StatusText(statusCode)
 	c.String(statusCode, text)

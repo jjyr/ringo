@@ -5,8 +5,10 @@ import (
 	"net/http"
 )
 
+type Template = template.Template
+
 type HTMLTemplateData struct {
-	Template *template.Template
+	Template *Template
 	Data     interface{}
 }
 
